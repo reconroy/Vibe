@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   Camera,
@@ -13,60 +13,12 @@ import {
   Copy
 } from "lucide-react";
 
-const BackgroundParticles = () => {
-  return (
-    <div className="absolute inset-0 overflow-hidden">
-      {[...Array(50)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-1 h-1 bg-purple-500/20 rounded-full"
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-          }}
-          animate={{
-            y: [0, -100, 0],
-            opacity: [0, 1, 0],
-          }}
-          transition={{
-            duration: Math.random() * 3 + 2,
-            repeat: Infinity,
-            delay: Math.random() * 2,
-          }}
-        />
-      ))}
-    </div>
-  );
-};
-
-const Button = ({ children, className = "", variant = "default", size = "default", ...props }) => {
-  const baseClasses = "inline-flex items-center justify-center font-medium transition-colors focus:outline-none disabled:opacity-50";
-  
-  const variants = {
-    default: "bg-purple-600 text-white hover:bg-purple-700",
-    destructive: "bg-red-600 text-white hover:bg-red-700",
-    ghost: "hover:bg-white/10 text-white",
-  };
-  
-  const sizes = {
-    default: "px-4 py-2 rounded-md",
-    icon: "w-10 h-10 rounded-md",
-  };
-  
-  return (
-    <button
-      className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
+import { Button } from "@/components/ui/button"
 
 const Select = ({ children, defaultValue, onValueChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [value, setValue] = useState(defaultValue);
-  
+
   return (
     <div className="relative">
       <button
@@ -105,6 +57,90 @@ const MeetingPage = () => {
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [stream, setStream] = useState(null);
+  const [audioOutput, setAudioOutput] = useState(""); // For speaker selection
+  const videoRef = useRef(null);
+  const [cameras, setCameras] = useState([]);
+  const [mics, setMics] = useState([]);
+  const [speakers, setSpeakers] = useState([]);
+  const [isSpeakerMuted, setIsSpeakerMuted] = useState(false);
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = isSpeakerMuted;
+    }
+  }, [isSpeakerMuted]);
+
+
+  useEffect(() => {
+    const getDevices = async () => {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      setCameras(devices.filter(d => d.kind === "videoinput"));
+      setMics(devices.filter(d => d.kind === "audioinput"));
+      setSpeakers(devices.filter(d => d.kind === "audiooutput"));
+    };
+
+    getDevices();
+  }, []);
+  const switchCamera = async (deviceId) => {
+    const newStream = await navigator.mediaDevices.getUserMedia({
+      video: { deviceId },
+      audio: true,
+    });
+    setStream(newStream);
+    if (videoRef.current) videoRef.current.srcObject = newStream;
+  };
+
+  const switchMic = async (deviceId) => {
+    const newStream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: { deviceId },
+    });
+    setStream(newStream);
+    if (videoRef.current) videoRef.current.srcObject = newStream;
+  };
+
+  const switchSpeaker = async (deviceId) => {
+    if (videoRef.current && videoRef.current.setSinkId) {
+      await videoRef.current.setSinkId(deviceId);
+      setAudioOutput(deviceId);
+    }
+  };
+
+
+  const toggleMic = () => {
+    stream?.getAudioTracks().forEach(track => {
+      track.enabled = !track.enabled;
+    });
+    setIsMicOn(prev => !prev);
+  };
+
+  const toggleCamera = () => {
+    stream?.getVideoTracks().forEach(track => {
+      track.enabled = !track.enabled;
+    });
+    setIsCameraOn(prev => !prev);
+  };
+
+
+  useEffect(() => {
+    const initMedia = async () => {
+      try {
+        const mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
+        });
+        setStream(mediaStream);
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+        }
+      } catch (err) {
+        console.error("Failed to get media stream:", err);
+      }
+    };
+
+    initMedia();
+  }, []);
+
 
   const meetingId = "abc-defg-hij";
   const hostName = "Sarah Chen";
@@ -145,22 +181,18 @@ const MeetingPage = () => {
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-gray-900 relative overflow-x-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-900 to-purple-900/5" />
-          <BackgroundParticles />
-        </div>
 
         {/* Header */}
-        <motion.header 
-          className="relative z-10 p-6 border-b border-white/10" 
-          initial={{ opacity: 0.8 }} 
-          animate={{ opacity: 1 }} 
+        <motion.header
+          className="relative z-10 p-6 border-b border-white/10"
+          initial={{ opacity: 0.8 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <motion.div 
-                className="text-2xl font-bold text-white" 
+              <motion.div
+                className="text-2xl font-bold text-white"
                 whileHover={{ scale: 1.05 }}
               >
                 Vibe
@@ -195,22 +227,26 @@ const MeetingPage = () => {
         {/* Main Layout */}
         <div className="relative z-10 max-w-7xl mx-auto p-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[calc(100vh-120px)]">
-            
+
             {/* Left: Video + Settings */}
             <div className="lg:col-span-2 space-y-6">
               {/* Video Preview */}
-              <motion.div 
-                className="relative aspect-video bg-gradient-to-br from-purple-700/40 via-purple-800/30 to-purple-900/20 rounded-2xl overflow-hidden backdrop-blur-sm border border-white/10" 
-                initial={{ opacity: 0.9 }} 
-                animate={{ opacity: 1 }} 
+              <motion.div
+                className="relative aspect-video bg-gradient-to-br from-purple-700/40 via-purple-800/30 to-purple-900/20 rounded-2xl overflow-hidden backdrop-blur-sm border border-white/10"
+                initial={{ opacity: 0.9 }}
+                animate={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
               >
                 <div className="absolute inset-0 flex items-center justify-center">
                   {isCameraOn ? (
                     <div className="relative w-full h-full flex items-center justify-center">
-                      <div className="w-32 h-32 bg-purple-600 rounded-full flex items-center justify-center text-white text-4xl font-semibold shadow-2xl">
-                        You
-                      </div>
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-full object-cover rounded-2xl"
+                      />
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center text-white/60">
@@ -222,19 +258,19 @@ const MeetingPage = () => {
 
                 {/* Control Buttons */}
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-                  <motion.div 
-                    className="flex items-center space-x-4 bg-black/20 backdrop-blur-md px-6 py-3 rounded-full border border-white/10" 
-                    initial={{ opacity: 0.9 }} 
-                    animate={{ opacity: 1 }} 
+                  <motion.div
+                    className="flex items-center space-x-4 bg-black/20 backdrop-blur-md px-6 py-3 rounded-full border border-white/10"
+                    initial={{ opacity: 0.9 }}
+                    animate={{ opacity: 1 }}
                     transition={{ duration: 0.2 }}
                   >
                     <Tooltip>
                       <TooltipTrigger>
-                        <Button 
-                          variant={isMicOn ? "default" : "destructive"} 
-                          size="icon" 
-                          className="rounded-full w-12 h-12" 
-                          onClick={() => setIsMicOn(!isMicOn)}
+                        <Button
+                          variant={isMicOn ? "default" : "destructive"}
+                          size="icon"
+                          className="rounded-full w-12 h-12"
+                          onClick={toggleMic}
                         >
                           {isMicOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
                         </Button>
@@ -246,11 +282,11 @@ const MeetingPage = () => {
 
                     <Tooltip>
                       <TooltipTrigger>
-                        <Button 
-                          variant={isCameraOn ? "default" : "destructive"} 
-                          size="icon" 
-                          className="rounded-full w-12 h-12" 
-                          onClick={() => setIsCameraOn(!isCameraOn)}
+                        <Button
+                          variant={isCameraOn ? "default" : "destructive"}
+                          size="icon"
+                          className="rounded-full w-12 h-12"
+                          onClick={toggleCamera}
                         >
                           {isCameraOn ? <Camera className="w-5 h-5" /> : <CameraOff className="w-5 h-5" />}
                         </Button>
@@ -264,11 +300,11 @@ const MeetingPage = () => {
               </motion.div>
 
               {/* Device Settings */}
-              <motion.div 
-                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 space-y-4 hover:bg-white/[0.04] transition-all duration-300" 
-                initial={{ opacity: 0.9 }} 
-                animate={{ opacity: 1 }} 
-                transition={{ duration: 0.2 }} 
+              <motion.div
+                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 space-y-4 hover:bg-white/[0.04] transition-all duration-300"
+                initial={{ opacity: 0.9 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
                 whileHover={{ y: -2 }}
               >
                 <h3 className="text-lg font-semibold text-white flex items-center space-x-2">
@@ -300,10 +336,10 @@ const MeetingPage = () => {
             {/* Right Panel */}
             <div className="space-y-6">
               {/* Meeting Details */}
-              <motion.div 
-                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 space-y-4 text-white" 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
+              <motion.div
+                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 space-y-4 text-white"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
               >
                 <h3 className="text-lg font-semibold">Meeting Details</h3>
@@ -323,10 +359,10 @@ const MeetingPage = () => {
               </motion.div>
 
               {/* Participants */}
-              <motion.div 
-                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 space-y-4 text-white" 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
+              <motion.div
+                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 space-y-4 text-white"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
               >
                 <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -351,9 +387,9 @@ const MeetingPage = () => {
               </motion.div>
 
               {/* Join Button */}
-              <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ duration: 0.4 }}
               >
                 <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white text-lg py-6 rounded-xl shadow-xl">
