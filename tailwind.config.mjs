@@ -7,6 +7,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+      },
       colors: {
         primary: {
           50: '#f3f1ff',
@@ -27,36 +30,36 @@ export default {
       keyframes: {
         'animate-in': {
           '0%': { opacity: 0 },
-          '100%': { opacity: 1 }
+          '100%': { opacity: 1 },
         },
         'animate-out': {
           '0%': { opacity: 1 },
-          '100%': { opacity: 0 }
+          '100%': { opacity: 0 },
         },
         'slide-in-from-top': {
           '0%': { transform: 'translateY(-2px)' },
-          '100%': { transform: 'translateY(0)' }
+          '100%': { transform: 'translateY(0)' },
         },
         'slide-in-from-bottom': {
           '0%': { transform: 'translateY(2px)' },
-          '100%': { transform: 'translateY(0)' }
+          '100%': { transform: 'translateY(0)' },
         },
         'slide-in-from-left': {
           '0%': { transform: 'translateX(-2px)' },
-          '100%': { transform: 'translateX(0)' }
+          '100%': { transform: 'translateX(0)' },
         },
         'slide-in-from-right': {
           '0%': { transform: 'translateX(2px)' },
-          '100%': { transform: 'translateX(0)' }
+          '100%': { transform: 'translateX(0)' },
         },
         'zoom-in': {
           '0%': { transform: 'scale(0.95)' },
-          '100%': { transform: 'scale(1)' }
+          '100%': { transform: 'scale(1)' },
         },
         'zoom-out': {
           '0%': { transform: 'scale(1)' },
-          '100%': { transform: 'scale(0.95)' }
-        }
+          '100%': { transform: 'scale(0.95)' },
+        },
       },
       animation: {
         'in': 'animate-in 0.2s ease-out',
@@ -66,8 +69,8 @@ export default {
         'slide-in-from-left': 'slide-in-from-left 0.2s ease-out',
         'slide-in-from-right': 'slide-in-from-right 0.2s ease-out',
         'zoom-in': 'zoom-in 0.2s ease-out',
-        'zoom-out': 'zoom-out 0.2s ease-in'
-      }
+        'zoom-out': 'zoom-out 0.2s ease-in',
+      },
     },
   },
   plugins: [],
@@ -81,6 +84,6 @@ export default {
     'data-[side=bottom]:slide-in-from-top-2',
     'data-[side=left]:slide-in-from-right-2',
     'data-[side=right]:slide-in-from-left-2',
-    'data-[side=top]:slide-in-from-bottom-2'
-  ]
+    'data-[side=top]:slide-in-from-bottom-2',
+  ],
 }

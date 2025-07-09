@@ -1,278 +1,172 @@
-  import React from "react"
+import React from "react"
 
 const LandingPage = () => {
-      return (
-          <div id="webcrumbs">
-              <div className="w-full min-h-screen bg-[#0D1117] text-white overflow-hidden relative">
-                  <div className="absolute inset-0 z-0">
-                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-purple-900/20 via-transparent to-blue-900/20"></div>
-                      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
-                      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-                  </div>
+  return (
+    <div id="webcrumbs">
+      <div className="w-full min-h-screen bg-[#0D1117] text-white overflow-hidden relative font-sans">
+        {/* Background Gradient + Glow */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-950 via-[#0D1117] to-blue-950 opacity-80" />
+          <div className="absolute -top-10 left-1/4 w-[600px] h-[600px] bg-purple-600/30 rounded-full blur-[180px] animate-pulse" />
+          <div className="absolute bottom-10 right-1/3 w-[480px] h-[480px] bg-blue-600/20 rounded-full blur-[150px] animate-pulse delay-500" />
+        </div>
 
-                  <nav className="relative z-10 backdrop-blur-sm bg-[#0D1117]/80 border-b border-gray-800/50 sticky top-0">
-                      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                          <div className="flex justify-between items-center h-16">
-                              <div className="flex items-center">
-                                  <div className="text-2xl font-bold text-white">
-                                      <span className="text-purple-400">Vibe</span>!
-                                  </div>
-                              </div>
-                              <div className="flex items-center space-x-4">
-                                  <button className="bg-white text-gray-900 px-6 py-2 rounded-2xl font-medium hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2">
-                                      <img
-                                          src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg"
-                                          className="w-5 h-5"
-                                          alt="Google"
-                                          keywords="google, logo, signin"
-                                      />
-                                      <span>Sign in with Google</span>
-                                  </button>
-                              </div>
-                          </div>
-                      </div>
-                  </nav>
-
-                  <main className="relative z-10">
-                      <section className="py-20 px-4 sm:px-6 lg:px-8">
-                          <div className="max-w-7xl mx-auto text-center">
-                              <div className="backdrop-blur-sm bg-white/5 rounded-3xl p-8 sm:p-12 lg:p-16 border border-white/10">
-                                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent">
-                                      Meet Instantly. Vibe Seamlessly.
-                                  </h1>
-                                  <p className="text-xl sm:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-                                      Connect with your team, friends, and family through secure, high-quality video
-                                      meetings
-                                  </p>
-
-                                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-                                      <button className="bg-purple-600 text-white px-8 py-4 rounded-2xl font-medium hover:bg-purple-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 shadow-lg shadow-purple-500/25">
-                                          {/* <span className="material-symbols-outlined">add</span> */}
-                                          <span>Create New Meeting</span>
-                                      </button>
-
-                                      <div className="flex items-center space-x-2">
-                                          <input
-                                              type="text"
-                                              placeholder="Enter meeting link"
-                                              className="bg-white/10 border border-white/20 rounded-2xl px-4 py-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
-                                          />
-                                          <button className="bg-white/10 border border-white/20 text-white px-6 py-4 rounded-2xl font-medium hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
-                                              <span className="material-symbols-outlined">login</span>
-                                          </button>
-                                      </div>
-                                  </div>
-
-                                  <button className="bg-white/10 border border-white/20 text-white px-8 py-4 rounded-2xl font-medium hover:bg-white/20 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 mx-auto">
-                                      {/* <span className="material-symbols-outlined">schedule</span> */}
-                                      <span>Schedule Meeting</span>
-                                  </button>
-                              </div>
-                          </div>
-                      </section>
-
-                      <section className="py-20 px-4 sm:px-6 lg:px-8">
-                          <div className="max-w-7xl mx-auto">
-                              <div className="text-center mb-16">
-                                  <h2 className="text-3xl sm:text-4xl font-bold mb-4">Why Choose Vibe?</h2>
-                                  <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-                                      Everything you need for seamless video meetings
-                                  </p>
-                              </div>
-
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                                  <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10 hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
-                                      <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center mb-6">
-                                          <span className="material-symbols-outlined text-purple-400 text-3xl">
-                                              security
-                                          </span>
-                                      </div>
-                                      <h3 className="text-xl font-semibold mb-4">Secure & Fast</h3>
-                                      <p className="text-gray-300">
-                                          End-to-end encrypted meetings with lightning-fast connections
-                                      </p>
-                                  </div>
-
-                                  <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10 hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
-                                      <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center mb-6">
-                                          <span className="material-symbols-outlined text-purple-400 text-3xl">
-                                              event
-                                          </span>
-                                      </div>
-                                      <h3 className="text-xl font-semibold mb-4">Schedule with Ease</h3>
-                                      <p className="text-gray-300">
-                                          Integrated calendar with smart scheduling and reminders
-                                      </p>
-                                  </div>
-
-                                  <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10 hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
-                                      <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center mb-6">
-                                          <img
-                                              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg"
-                                              className="w-8 h-8"
-                                              alt="Google Auth"
-                                              keywords="google, authentication, login"
-                                          />
-                                      </div>
-                                      <h3 className="text-xl font-semibold mb-4">Google Auth Only</h3>
-                                      <p className="text-gray-300">
-                                          Simple one-click authentication with your Google account
-                                      </p>
-                                  </div>
-
-                                  <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10 hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
-                                      <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center mb-6">
-                                          <span className="material-symbols-outlined text-purple-400 text-3xl">hd</span>
-                                      </div>
-                                      <h3 className="text-xl font-semibold mb-4">HD Audio/Video</h3>
-                                      <p className="text-gray-300">
-                                          Crystal clear video calls with screen sharing capabilities
-                                      </p>
-                                  </div>
-                              </div>
-                          </div>
-                      </section>
-
-                      <section className="py-20 px-4 sm:px-6 lg:px-8">
-                          <div className="max-w-4xl mx-auto">
-                              <div className="text-center mb-16">
-                                  <h2 className="text-3xl sm:text-4xl font-bold mb-4">Get in Touch</h2>
-                                  <p className="text-xl text-gray-300">Have questions? We'd love to hear from you</p>
-                              </div>
-
-                              <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 sm:p-12 border border-white/10">
-                                  <form className="space-y-6">
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                          <div>
-                                              <label className="block text-sm font-medium mb-2">Name</label>
-                                              <input
-                                                  type="text"
-                                                  className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
-                                                  placeholder="Your name"
-                                              />
-                                          </div>
-                                          <div>
-                                              <label className="block text-sm font-medium mb-2">Email</label>
-                                              <input
-                                                  type="email"
-                                                  className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
-                                                  placeholder="your@email.com"
-                                              />
-                                          </div>
-                                      </div>
-
-                                      <div>
-                                          <label className="block text-sm font-medium mb-2">Message</label>
-                                          <textarea
-                                              rows="4"
-                                              className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
-                                              placeholder="Tell us what's on your mind..."
-                                          ></textarea>
-                                      </div>
-
-                                      <div className="text-center">
-                                          <button className="bg-purple-600 text-white px-8 py-4 rounded-2xl font-medium hover:bg-purple-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 mx-auto">
-                                              <span>Send Message</span>
-                                             </button>
-                                      </div>
-                                  </form>
-                              </div>
-                          </div>
-                      </section>
-                  </main>
-
-                  <footer className="relative z-10 bg-[#0D1117]/80 border-t border-gray-800/50 py-12 px-4 sm:px-6 lg:px-8">
-                      <div className="max-w-7xl mx-auto">
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                              <div>
-                                  <div className="text-2xl font-bold text-white mb-4">
-                                      <span className="text-purple-400">Vibe</span>!
-                                  </div>
-                                  <p className="text-gray-300">
-                                      Meet instantly, vibe seamlessly with secure video meetings.
-                                  </p>
-                              </div>
-
-                              <div>
-                                  <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-                                  <ul className="space-y-2">
-                                      <li>
-                                          <a
-                                              href="#"
-                                              className="text-gray-300 hover:text-white transition-colors duration-300"
-                                          >
-                                              Home
-                                          </a>
-                                      </li>
-                                      <li>
-                                          <a
-                                              href="#"
-                                              className="text-gray-300 hover:text-white transition-colors duration-300"
-                                          >
-                                              Features
-                                          </a>
-                                      </li>
-                                      <li>
-                                          <a
-                                              href="#"
-                                              className="text-gray-300 hover:text-white transition-colors duration-300"
-                                          >
-                                              Contact
-                                          </a>
-                                      </li>
-                                  </ul>
-                              </div>
-
-                              <div>
-                                  <h3 className="text-lg font-semibold mb-4">Support</h3>
-                                  <ul className="space-y-2">
-                                      <li>
-                                          <a
-                                              href="#"
-                                              className="text-gray-300 hover:text-white transition-colors duration-300"
-                                          >
-                                              Help Center
-                                          </a>
-                                      </li>
-                                      <li>
-                                          <a
-                                              href="#"
-                                              className="text-gray-300 hover:text-white transition-colors duration-300"
-                                          >
-                                              Privacy Policy
-                                          </a>
-                                      </li>
-                                      <li>
-                                          <a
-                                              href="#"
-                                              className="text-gray-300 hover:text-white transition-colors duration-300"
-                                          >
-                                              Terms of Service
-                                          </a>
-                                      </li>
-                                  </ul>
-                              </div>
-                          </div>
-
-                          <div className="border-t border-gray-800/50 mt-8 pt-8 text-center">
-                              <p className="text-gray-400">&copy; 2024 Vibe! All rights reserved.</p>
-                          </div>
-                      </div>
-                  </footer>
-
-                  <div className="absolute bottom-8 right-8 z-20">
-                      <button className="bg-purple-600 text-white w-14 h-14 rounded-full flex items-center justify-center hover:bg-purple-700 transition-all duration-300 transform hover:scale-110 shadow-lg shadow-purple-500/25">
-                          <span className="material-symbols-outlined">help</span>
-                      </button>
-                  </div>
-
-                  {/* Next: "Add meeting room UI component with participant grid" */}
-                  {/* Next: "Add calendar modal component for scheduling" */}
-                  {/* Next: "Add meeting link generation with copy functionality" */}
-                  {/* Next: "Add user authentication state management" */}
-                  {/* Next: "Add responsive mobile drawer menu" */}
-              </div>
+        {/* Navbar */}
+        <nav className="relative z-10 backdrop-blur-md bg-[#0D1117]/80 border-b border-white/10 sticky top-0 shadow-sm">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div className="text-2xl font-bold text-white">
+              <span className="text-purple-400">Vibe</span>!
+            </div>
+            <button className="flex items-center gap-2 px-4 py-2 bg-white text-gray-900 rounded-lg hover:bg-gray-100 text-sm font-medium shadow-md">
+              <img
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg"
+                alt="Google"
+                className="w-5 h-5"
+              />
+              Sign in with Google
+            </button>
           </div>
-      )
-  };
- export default LandingPage;
+        </nav>
+
+        {/* Hero Section */}
+        <main className="relative z-10 py-24 px-6 text-center">
+          <div className="max-w-4xl mx-auto bg-white/5 border border-white/10 rounded-3xl p-10 backdrop-blur-md shadow-xl">
+            <h1 className="text-5xl sm:text-6xl font-extrabold bg-gradient-to-r from-white via-purple-300 to-purple-600 bg-clip-text text-transparent mb-6">
+              Meet Instantly. Vibe Seamlessly.
+            </h1>
+            <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
+              Connect with your team, friends, and family through secure, high-quality video meetings.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-base font-medium shadow-purple-500/30 shadow-md">
+                Create New Meeting
+              </button>
+              <div className="flex items-center gap-2 bg-white/10 border border-white/20 rounded-xl px-3 py-2">
+                <input
+                  type="text"
+                  placeholder="Enter meeting link"
+                  className="bg-transparent text-white placeholder-gray-400 focus:outline-none"
+                />
+                <button className="text-white hover:text-purple-400">
+                  <span className="material-symbols-outlined">login</span>
+                </button>
+              </div>
+            </div>
+            <button className="mt-6 px-6 py-3 bg-white/10 border border-white/20 text-white rounded-xl hover:bg-white/20">
+              Schedule Meeting
+            </button>
+          </div>
+        </main>
+
+        {/* Features Section */}
+        <section className="py-20 px-6 text-center">
+          <h2 className="text-4xl font-bold mb-4">Why Choose Vibe?</h2>
+          <p className="text-lg text-gray-300 mb-12">Everything you need for seamless video meetings</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            {["security", "event", "google", "hd"].map((icon, i) => {
+              const features = [
+                ["Secure & Fast", "End-to-end encrypted meetings with lightning-fast connections"],
+                ["Schedule with Ease", "Integrated calendar with smart scheduling and reminders"],
+                ["Google Auth Only", "Simple one-click authentication with your Google account"],
+                ["HD Audio/Video", "Crystal clear video calls with screen sharing capabilities"],
+              ];
+              return (
+                <div
+                  key={i}
+                  className="bg-white/5 rounded-2xl border border-white/10 p-6 text-center backdrop-blur-sm hover:bg-white/10 transition shadow-md hover:shadow-xl"
+                >
+                  <div className="w-14 h-14 mx-auto flex items-center justify-center bg-purple-500/30 text-purple-200 rounded-xl mb-4">
+                    {icon === "google" ? (
+                      <img
+                        src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg"
+                        alt="Google Icon"
+                        className="w-6 h-6"
+                      />
+                    ) : (
+                      <span className="material-symbols-outlined text-2xl">{icon}</span>
+                    )}
+                  </div>
+                  <h3 className="font-semibold text-lg mb-2">{features[i][0]}</h3>
+                  <p className="text-sm text-gray-300">{features[i][1]}</p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Contact Section */}
+        <section className="py-20 px-6">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-4xl font-bold mb-4">Get in Touch</h2>
+            <p className="text-lg text-gray-300 mb-10">Have questions? We'd love to hear from you</p>
+            <form className="bg-white/5 border border-white/10 rounded-2xl p-8 space-y-6 backdrop-blur-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  placeholder="Your name"
+                  className="px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+                <input
+                  type="email"
+                  placeholder="your@email.com"
+                  className="px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <textarea
+                rows="4"
+                placeholder="Tell us what's on your mind..."
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white placeholder-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+              ></textarea>
+              <button
+                type="submit"
+                className="mt-2 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 shadow-md hover:shadow-purple-500/30"
+              >
+                Send Message
+              </button>
+            </form>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="bg-[#0D1117]/90 border-t border-white/10 py-10 px-6 text-gray-400 text-sm">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <div className="text-white text-xl font-bold mb-2">
+                <span className="text-purple-400">Vibe</span>!
+              </div>
+              <p>Meet instantly, vibe seamlessly with secure video meetings.</p>
+            </div>
+            <div>
+              <h4 className="text-white font-semibold mb-2">Quick Links</h4>
+              <ul className="space-y-1">
+                {["Home", "Features", "Contact"].map((text, idx) => (
+                  <li key={idx}><a href="#" className="hover:text-white">{text}</a></li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white font-semibold mb-2">Support</h4>
+              <ul className="space-y-1">
+                {["Help Center", "Privacy Policy", "Terms of Service"].map((text, idx) => (
+                  <li key={idx}><a href="#" className="hover:text-white">{text}</a></li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div className="mt-8 text-center text-gray-500 border-t border-white/10 pt-6">
+            &copy; 2024 Vibe! All rights reserved.
+          </div>
+        </footer>
+
+        {/* Floating Help Button */}
+        <div className="fixed bottom-6 right-6 z-20">
+          <button className="w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition">
+            <span className="material-symbols-outlined">help</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+};
+
+export default LandingPage;
