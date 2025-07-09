@@ -56,7 +56,7 @@ const Configure = ({
         {/* Control Buttons */}
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
           <motion.div
-            className="flex items-center space-x-4 bg-black/20 backdrop-blur-md px-6 py-3 rounded-full border border-white/10"
+            className="flex items-center space-x-4 bg-black/20 backdrop-blur-md px-3 py-2 rounded-full border border-white/10"
             initial={{ opacity: 0.9 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
@@ -67,7 +67,7 @@ const Configure = ({
                 <Button
                   variant={isMicOn ? "default" : "destructive"}
                   size="icon"
-                  className={`rounded-full w-12 h-12 relative ${
+                  className={`rounded-full w-9 h-9 relative ${
                     audioLevel > 20 && isMicOn ? "ring-2 ring-green-500" : ""
                   }`}
                   onClick={toggleMic}
@@ -86,7 +86,7 @@ const Configure = ({
                 <Button
                   variant={isCameraOn ? "default" : "destructive"}
                   size="icon"
-                  className="rounded-full w-12 h-12"
+                  className="rounded-full w-9 h-9"
                   onClick={toggleCamera}
                 >
                   {isCameraOn ? <Camera className="w-5 h-5" /> : <CameraOff className="w-5 h-5" />}
@@ -103,7 +103,7 @@ const Configure = ({
                 <Button
                   variant={isSpeakerMuted ? "destructive" : "default"}
                   size="icon"
-                  className="rounded-full w-12 h-12"
+                  className="rounded-full w-9 h-9"
                   onClick={() => setIsSpeakerMuted((prev) => !prev)}
                 >
                   <Speaker className="w-5 h-5" />
