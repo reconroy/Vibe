@@ -1,13 +1,34 @@
+"use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, Video, Calendar, Users } from "lucide-react";
+import { Video, Calendar, Users } from "lucide-react";
 
 const Hero = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [meetingInput, setMeetingInput] = useState("");
+  const router = useRouter();
+
+  const handleJoin = () => {
+    const trimmed = meetingInput.trim();
+    if (!trimmed) return;
+
+    // Extract meeting ID from full link or raw ID
+    const match = trimmed.match(/([a-zA-Z0-9\-]+)$/);
+    const meetingId = match ? match[1] : trimmed;
+
+    router.push(`/meet/${meetingId}`);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleJoin();
+    }
+  };
 
   return (
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden pt-16 bg-black text-white">
-      {/* Animated Background Spotlights */}
+      {/* Background Spotlights */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
           initial={{ opacity: 0 }}
@@ -18,7 +39,6 @@ const Hero = () => {
           transition={{
             duration: 4,
             repeat: Infinity,
-            repeatType: "loop",
             ease: "easeInOut",
           }}
           className="absolute bottom-0 left-0 w-[110vw] h-[300vh] pointer-events-none"
@@ -44,7 +64,6 @@ const Hero = () => {
           transition={{
             duration: 5,
             repeat: Infinity,
-            repeatType: "loop",
             ease: "easeInOut",
           }}
           className="absolute bottom-0 right-0 w-[110vw] h-[200vh] pointer-events-none"
@@ -70,12 +89,7 @@ const Hero = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="space-y-8"
         >
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-4xl sm:text-6xl lg:text-7xl font-bold leading-tight"
-          >
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold leading-tight">
             <span className="bg-gradient-to-r from-white via-purple-400 to-purple-500 bg-clip-text text-transparent">
               Connect with
             </span>
@@ -83,31 +97,18 @@ const Hero = () => {
             <span className="bg-gradient-to-r from-purple-500 to-fuchsia-500 bg-clip-text text-transparent">
               Vibe
             </span>
-          </motion.h1>
+          </h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
-          >
+          <p className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
             {isLoggedIn
               ? "Welcome back! Start a meeting, schedule for later, or join an existing conversation."
               : "Experience seamless video conferencing with crystal-clear quality, powerful collaboration tools, and instant connectivity."}
-          </motion.p>
+          </p>
 
           {!isLoggedIn ? (
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8"
-            >
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
               <motion.button
-                whileHover={{
-                  scale: 1.05,
-                  boxShadow: "0 20px 40px rgba(168, 85, 247, 0.3)",
-                }}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsLoggedIn(true)}
                 className="group bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white px-8 py-4 rounded-full font-semibold text-lg flex items-center gap-2 hover:shadow-2xl transition-all duration-300"
@@ -126,16 +127,10 @@ const Hero = () => {
                 </div>
                 <span className="font-medium">Watch Demo</span>
               </motion.button>
-            </motion.div>
+            </div>
           ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
-              className="pt-8 space-y-6"
-            >
+            <div className="pt-8 space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
-                {/* Card Buttons */}
                 {[
                   {
                     title: "Instant Meeting",
@@ -175,23 +170,28 @@ const Hero = () => {
                 ))}
               </div>
 
+              {/* Input to Join Meeting */}
               <div className="flex justify-center">
                 <div className="bg-gray-900/80 backdrop-blur-sm border border-gray-700 rounded-full px-6 py-3 flex items-center gap-3">
                   <input
                     type="text"
                     placeholder="Enter meeting ID or link"
                     className="bg-transparent border-none outline-none text-white placeholder-gray-400 text-sm w-64"
+                    value={meetingInput}
+                    onChange={(e) => setMeetingInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
                   />
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="bg-purple-500 text-white px-4 py-2 rounded-full font-medium text-sm hover:bg-purple-600 transition-colors"
+                    onClick={handleJoin}
                   >
                     Join
                   </motion.button>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
         </motion.div>
       </div>

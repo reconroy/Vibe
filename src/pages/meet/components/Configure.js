@@ -1,5 +1,3 @@
-import { Select } from "./path/to/Select";
-import { SelectItem } from "./path/to/SelectItem";
 
 const Configure = ({
   motion,
