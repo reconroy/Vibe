@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, useScroll, useSpring } from "framer-motion";
 import { Menu, X, User } from "lucide-react";
+import { useRouter } from "next/router";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,7 +19,7 @@ const Navbar = () => {
     damping: 30,
     restDelta: 0.001,
   });
-
+const router = useRouter();
   return (
     <>
       {/* Navbar */}
@@ -36,6 +37,7 @@ const Navbar = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
               className="text-2xl font-bold bg-gradient-to-r from-purple-500 to-indigo-400 bg-clip-text text-transparent"
+              onClick={() => router.push("/")}
             >
               Vibe
             </motion.div>

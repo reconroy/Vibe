@@ -1,6 +1,8 @@
+import { useRouter } from 'next/router';
 import React from 'react'
 
 const Header = ({ motion, currentTime, formatDate, formatTime, Tooltip, Button, Settings, Calendar, Clock, TooltipTrigger, TooltipContent }) => {
+    const router = useRouter();
     return (
         <>
             <motion.header
@@ -14,6 +16,8 @@ const Header = ({ motion, currentTime, formatDate, formatTime, Tooltip, Button, 
                         <motion.div
                             className="text-2xl font-bold text-white"
                             whileHover={{ scale: 1.05 }}
+                            onClick={() => router.push("/")}
+
                         >
                              <span className="text-2xl font-bold bg-gradient-to-r from-purple-500 to-indigo-400 bg-clip-text text-transparent">Vibe</span>
                         </motion.div>
