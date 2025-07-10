@@ -15,7 +15,7 @@ const Header = ({ motion, currentTime, formatDate, formatTime, Tooltip, Button, 
                             className="text-2xl font-bold text-white"
                             whileHover={{ scale: 1.05 }}
                         >
-                             <span className="text-purple-400">Vibe</span>!
+                             <span className="text-2xl font-bold bg-gradient-to-r from-purple-500 to-indigo-400 bg-clip-text text-transparent">Vibe</span>
                         </motion.div>
                         <div className="hidden md:block w-px h-8 bg-white/20" />
                         <div className="hidden md:flex items-center space-x-6 text-white/80">
