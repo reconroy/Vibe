@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 
-import Link from 'next/link';
-
 const LandingPage = () => {
   const router = useRouter();
   const [meetingLink, setMeetingLink] = useState("");
@@ -12,6 +10,7 @@ const LandingPage = () => {
       router.push(`/meet/${meetingLink.trim()}`);
     }
   };
+
   return (
     <div id="webcrumbs">
       <div className="w-full min-h-screen bg-[#0D1117] text-white overflow-hidden relative font-sans">

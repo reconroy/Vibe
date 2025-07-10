@@ -1,3 +1,6 @@
+import { Select } from "./path/to/Select";
+import { SelectItem } from "./path/to/SelectItem";
+
 const Configure = ({
   motion,
   Button,
@@ -26,6 +29,7 @@ const Configure = ({
   cameras,
   mics,
   speakers,
+  testMicLoopback,
 }) => {
   return (
     <div className="lg:col-span-2 space-y-6">
@@ -61,7 +65,7 @@ const Configure = ({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
           >
-            {/* Mic toggle with live level */}
+            {/* Mic Toggle */}
             <Tooltip>
               <TooltipTrigger>
                 <Button
@@ -80,7 +84,7 @@ const Configure = ({
               </TooltipContent>
             </Tooltip>
 
-            {/* Camera toggle */}
+            {/* Camera Toggle */}
             <Tooltip>
               <TooltipTrigger>
                 <Button
@@ -97,7 +101,7 @@ const Configure = ({
               </TooltipContent>
             </Tooltip>
 
-            {/* Speaker mute */}
+            {/* Speaker Toggle */}
             <Tooltip>
               <TooltipTrigger>
                 <Button
@@ -131,7 +135,7 @@ const Configure = ({
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Camera dropdown */}
+          {/* Camera Dropdown */}
           <div className="space-y-2">
             <label className="text-sm text-white/80 flex items-center space-x-2">
               <Camera className="w-4 h-4" />
@@ -139,14 +143,18 @@ const Configure = ({
             </label>
             <Select defaultValue={cameras[0]?.label || "Default Camera"}>
               {cameras.map((cam) => (
-                <SelectItem key={cam.deviceId} value={cam.deviceId} onClick={switchCamera}>
+                <SelectItem
+                  key={cam.deviceId}
+                  value={cam.deviceId}
+                  onClick={(val) => switchCamera(val)}
+                >
                   {cam.label || "Camera"}
                 </SelectItem>
               ))}
             </Select>
           </div>
 
-          {/* Microphone dropdown */}
+          {/* Microphone Dropdown */}
           <div className="space-y-2">
             <label className="text-sm text-white/80 flex items-center space-x-2">
               <Mic className="w-4 h-4" />
@@ -154,14 +162,18 @@ const Configure = ({
             </label>
             <Select defaultValue={mics[0]?.label || "Default Microphone"}>
               {mics.map((mic) => (
-                <SelectItem key={mic.deviceId} value={mic.deviceId} onClick={switchMic}>
+                <SelectItem
+                  key={mic.deviceId}
+                  value={mic.deviceId}
+                  onClick={(val) => switchMic(val)}
+                >
                   {mic.label || "Microphone"}
                 </SelectItem>
               ))}
             </Select>
           </div>
 
-          {/* Speakers dropdown */}
+          {/* Speaker Dropdown */}
           <div className="space-y-2">
             <label className="text-sm text-white/80 flex items-center space-x-2">
               <Speaker className="w-4 h-4" />
@@ -169,12 +181,26 @@ const Configure = ({
             </label>
             <Select defaultValue={speakers[0]?.label || "Default Speakers"}>
               {speakers.map((spk) => (
-                <SelectItem key={spk.deviceId} value={spk.deviceId} onClick={switchSpeaker}>
+                <SelectItem
+                  key={spk.deviceId}
+                  value={spk.deviceId}
+                  onClick={(val) => switchSpeaker(val)}
+                >
                   {spk.label || "Speaker"}
                 </SelectItem>
               ))}
             </Select>
           </div>
+        </div>
+
+        {/* Loopback Test Button */}
+        <div className="pt-4">
+          <Button
+            onClick={testMicLoopback}
+            className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20"
+          >
+            🔊 Test Microphone Loopback
+          </Button>
         </div>
       </motion.div>
     </div>
