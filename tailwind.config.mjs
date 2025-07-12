@@ -9,6 +9,23 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+        // Fun & Creative Fonts
+        'winky': ['Winky Rough', 'cursive'],
+        'kalam': ['Kalam', 'cursive'],
+        'caveat': ['Caveat', 'cursive'],
+        'architects': ['Architects Daughter', 'cursive'],
+        'indie': ['Indie Flower', 'cursive'],
+        'marker': ['Permanent Marker', 'cursive'],
+        // Modern & Clean Fonts
+        'fredoka': ['Fredoka', 'sans-serif'],
+        'comfortaa': ['Comfortaa', 'sans-serif'],
+        'nunito': ['Nunito', 'sans-serif'],
+        // Rough & Distressed Fonts (similar to Winky Rough)
+        'creepster': ['Creepster', 'cursive'],
+        'griffy': ['Griffy', 'cursive'],
+        'nosifer': ['Nosifer', 'cursive'],
+        'butcherman': ['Butcherman', 'cursive'],
+        'eater': ['Eater', 'cursive'],
       },
       colors: {
         primary: {
