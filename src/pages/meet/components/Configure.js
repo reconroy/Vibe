@@ -32,6 +32,7 @@ const Configure = ({
   selectedSpeaker,
   toggleMicLoopback,
   isLoopbackActive,
+  isCameraToggling,
 }) => {
   return (
     <div className="lg:col-span-2 space-y-6">
@@ -119,17 +120,27 @@ const Configure = ({
                 <Button
                   variant={isCameraOn && cameras.length > 0 ? "default" : "destructive"}
                   size="icon"
-                  className={`rounded-full w-9 h-9 ${cameras.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
-                  onClick={cameras.length > 0 ? toggleCamera : undefined}
-                  disabled={cameras.length === 0}
+                  className={`rounded-full w-9 h-9 ${
+                    cameras.length === 0 || isCameraToggling ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  onClick={cameras.length > 0 && !isCameraToggling ? toggleCamera : undefined}
+                  disabled={cameras.length === 0 || isCameraToggling}
                 >
-                  {isCameraOn && cameras.length > 0 ? <Camera className="w-5 h-5" /> : <CameraOff className="w-5 h-5" />}
+                  {isCameraToggling ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : isCameraOn && cameras.length > 0 ? (
+                    <Camera className="w-5 h-5" />
+                  ) : (
+                    <CameraOff className="w-5 h-5" />
+                  )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>
                   {cameras.length === 0
                     ? "No camera available"
+                    : isCameraToggling
+                    ? "Switching camera..."
                     : isCameraOn
                     ? "Turn off camera"
                     : "Turn on camera"

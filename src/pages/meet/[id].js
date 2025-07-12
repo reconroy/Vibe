@@ -46,6 +46,32 @@ const MeetingPage = () => {
   const [deviceNotification, setDeviceNotification] = useState(null);
   const [isLoopbackActive, setIsLoopbackActive] = useState(false);
   const [wasLoopbackActiveBeforeDisconnect, setWasLoopbackActiveBeforeDisconnect] = useState(false);
+  const [isCameraToggling, setIsCameraToggling] = useState(false);
+
+  // Function to stop ALL video tracks globally (safety measure)
+  const stopAllVideoTracks = () => {
+    console.log('Stopping ALL video tracks globally');
+
+    // Stop tracked video track
+    if (videoTrack) {
+      videoTrack.stop();
+    }
+
+    // Stop all tracks in main stream
+    if (stream) {
+      stream.getVideoTracks().forEach(track => track.stop());
+    }
+
+    // Stop all tracks in video element
+    if (videoRef.current && videoRef.current.srcObject) {
+      const videoStream = videoRef.current.srcObject;
+      if (videoStream.getVideoTracks) {
+        videoStream.getVideoTracks().forEach(track => track.stop());
+      }
+    }
+
+    console.log('ALL video tracks stopped globally');
+  };
 
   const videoRef = useRef(null);
   const loopbackAudioRef = useRef(null);
@@ -356,13 +382,59 @@ const MeetingPage = () => {
     };
   }, [audioTrack, isMicOn]); // Depend on audioTrack and isMicOn
 
-  // Cleanup loopback only when component unmounts (leaving page)
+  // Monitor video track changes and update video element
+  useEffect(() => {
+    if (!videoRef.current) return;
+
+    if (videoTrack && isCameraOn) {
+      console.log('Video track changed - updating video element via useEffect');
+      const newStream = new MediaStream();
+      newStream.addTrack(videoTrack);
+      if (audioTrack) {
+        newStream.addTrack(audioTrack);
+      }
+
+      // Update video element
+      videoRef.current.srcObject = newStream;
+
+      // Ensure video plays
+      const playVideo = async () => {
+        try {
+          await videoRef.current.play();
+          console.log('Video playing via useEffect');
+        } catch (error) {
+          console.warn('Video autoplay failed via useEffect:', error);
+        }
+      };
+
+      // Small delay then play
+      setTimeout(playVideo, 50);
+    }
+  }, [videoTrack, audioTrack, isCameraOn]);
+
+  // Cleanup loopback and ALL video tracks when component unmounts (leaving page)
   useEffect(() => {
     return () => {
+      console.log('Component unmounting - cleaning up all media tracks');
+
+      // Stop loopback
       if (isLoopbackActive && loopbackAudioRef.current) {
         loopbackAudioRef.current.pause();
         loopbackAudioRef.current.srcObject = null;
       }
+
+      // Stop ALL video tracks to ensure camera light turns off
+      stopAllVideoTracks();
+
+      // Stop audio tracks too for complete cleanup
+      if (audioTrack) {
+        audioTrack.stop();
+      }
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+
+      console.log('All media tracks stopped on unmount');
     };
   }, []); // Empty dependency array - only runs on unmount
 
@@ -374,11 +446,108 @@ const MeetingPage = () => {
     console.log(`Microphone ${newState ? 'enabled' : 'disabled'}, camera state unchanged:`, isCameraOn);
   };
 
-  const toggleCamera = () => {
-    if (!videoTrack || cameras.length === 0) return;
+  const toggleCamera = async () => {
+    if (cameras.length === 0 || isCameraToggling) return;
+
+    setIsCameraToggling(true);
     const newState = !isCameraOn;
-    videoTrack.enabled = newState;
-    setIsCameraOn(newState);
+
+    if (newState) {
+      // Turn camera ON - create new video track
+      try {
+        console.log('Turning camera ON - creating new video track');
+        const newVideoStream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: { exact: selectedCamera } }
+        });
+
+        const newVideoTrack = newVideoStream.getVideoTracks()[0];
+
+        // Remove old video track if it exists
+        if (videoTrack) {
+          stream.removeTrack(videoTrack);
+          videoTrack.stop();
+        }
+
+        // Add new video track to stream
+        stream.addTrack(newVideoTrack);
+        setVideoTrack(newVideoTrack);
+
+        // Create a new combined stream for the video element
+        const combinedStream = new MediaStream();
+        combinedStream.addTrack(newVideoTrack);
+        if (audioTrack) {
+          combinedStream.addTrack(audioTrack);
+        }
+
+        // Update video element with new stream
+        if (videoRef.current) {
+          videoRef.current.srcObject = combinedStream;
+          console.log('Video element updated with new stream');
+
+          // Small delay to ensure stream is ready
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          // Force video element to load and play
+          videoRef.current.load();
+          try {
+            await videoRef.current.play();
+            console.log('Video element playing successfully');
+          } catch (playError) {
+            console.warn('Video autoplay failed (expected in some browsers):', playError);
+          }
+        }
+
+        setIsCameraOn(true);
+        console.log('Camera turned ON successfully');
+      } catch (error) {
+        console.error('Failed to turn camera on:', error);
+        setIsCameraOn(false);
+        setIsCameraToggling(false);
+        return; // Exit early on error
+      }
+    } else {
+      // Turn camera OFF - stop ALL video tracks
+      console.log('Turning camera OFF - stopping ALL video tracks');
+
+      // Use global stop function to ensure ALL tracks are stopped
+      stopAllVideoTracks();
+
+      // Clean up state and stream references
+      if (videoTrack) {
+        stream.removeTrack(videoTrack);
+        setVideoTrack(null);
+      }
+
+      // Remove any remaining video tracks from stream
+      if (stream) {
+        const remainingVideoTracks = stream.getVideoTracks();
+        remainingVideoTracks.forEach(track => {
+          stream.removeTrack(track);
+        });
+      }
+
+      // Clear and update video element
+      if (videoRef.current) {
+        // Completely clear the video element first
+        videoRef.current.srcObject = null;
+        videoRef.current.load(); // Force reload to clear any cached streams
+
+        console.log('Video element cleared and reloaded');
+
+        // Create fresh audio-only stream if needed
+        if (audioTrack) {
+          const audioOnlyStream = new MediaStream();
+          audioOnlyStream.addTrack(audioTrack);
+          videoRef.current.srcObject = audioOnlyStream;
+          console.log('Video element updated to fresh audio-only stream');
+        }
+      }
+
+      setIsCameraOn(false);
+      console.log('Camera turned OFF - ALL video tracks stopped, light should be off');
+    }
+
+    setIsCameraToggling(false);
     console.log(`Camera ${newState ? 'enabled' : 'disabled'}, microphone state unchanged:`, isMicOn);
   };
 
@@ -584,6 +753,7 @@ const MeetingPage = () => {
               selectedSpeaker={selectedSpeaker}
               toggleMicLoopback={toggleMicLoopback}
               isLoopbackActive={isLoopbackActive}
+              isCameraToggling={isCameraToggling}
             />
 
             <RightPanel
