@@ -43,6 +43,9 @@ const MeetingPage = () => {
   const [videoTrack, setVideoTrack] = useState(null);
   const [audioTrack, setAudioTrack] = useState(null);
 
+  const [deviceNotification, setDeviceNotification] = useState(null);
+  const [isLoopbackActive, setIsLoopbackActive] = useState(false);
+
   const videoRef = useRef(null);
   const loopbackAudioRef = useRef(null);
 
@@ -167,34 +170,142 @@ const MeetingPage = () => {
     init();
   }, []);
 
+  // Live device monitoring
+  useEffect(() => {
+    const handleDeviceChange = async () => {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const availableCameras = devices.filter(d => d.kind === "videoinput");
+        const availableMics = devices.filter(d => d.kind === "audioinput");
+        const availableSpeakers = devices.filter(d => d.kind === "audiooutput");
+
+        // Update device lists
+        setCameras(availableCameras);
+        setMics(availableMics);
+        setSpeakers(availableSpeakers);
+
+        // Check if currently selected devices are still available
+        const currentCameraExists = selectedCamera && availableCameras.find(cam => cam.deviceId === selectedCamera);
+        const currentMicExists = selectedMic && availableMics.find(mic => mic.deviceId === selectedMic);
+        const currentSpeakerExists = selectedSpeaker && availableSpeakers.find(spk => spk.deviceId === selectedSpeaker);
+
+        // Handle camera device changes
+        if (selectedCamera && !currentCameraExists && availableCameras.length > 0) {
+          // Current camera was unplugged, switch to first available
+          const newCamera = availableCameras[0];
+          setSelectedCamera(newCamera.deviceId);
+          saveDevicePreference('camera', newCamera.deviceId);
+          await switchCamera(newCamera.deviceId);
+          setDeviceNotification(`Camera switched to: ${newCamera.label || 'Default Camera'}`);
+          setTimeout(() => setDeviceNotification(null), 3000);
+        } else if (availableCameras.length === 0 && isCameraOn) {
+          // No cameras available, mute camera
+          setIsCameraOn(false);
+          if (videoTrack) {
+            videoTrack.enabled = false;
+          }
+          setDeviceNotification('Camera disconnected - video muted');
+          setTimeout(() => setDeviceNotification(null), 3000);
+        }
+
+        // Handle microphone device changes
+        if (selectedMic && !currentMicExists && availableMics.length > 0) {
+          // Current mic was unplugged, switch to first available
+          const newMic = availableMics[0];
+          setSelectedMic(newMic.deviceId);
+          saveDevicePreference('mic', newMic.deviceId);
+          await switchMic(newMic.deviceId);
+          setDeviceNotification(`Microphone switched to: ${newMic.label || 'Default Microphone'}`);
+          setTimeout(() => setDeviceNotification(null), 3000);
+        } else if (availableMics.length === 0 && isMicOn) {
+          // No mics available, mute microphone
+          setIsMicOn(false);
+          if (audioTrack) {
+            audioTrack.enabled = false;
+          }
+          setDeviceNotification('Microphone disconnected - audio muted');
+          setTimeout(() => setDeviceNotification(null), 3000);
+        }
+
+        // Handle speaker device changes
+        if (selectedSpeaker && !currentSpeakerExists && availableSpeakers.length > 0) {
+          // Current speaker was unplugged, switch to first available
+          const newSpeaker = availableSpeakers[0];
+          setSelectedSpeaker(newSpeaker.deviceId);
+          saveDevicePreference('speaker', newSpeaker.deviceId);
+          await switchSpeaker(newSpeaker.deviceId);
+          setDeviceNotification(`Speaker switched to: ${newSpeaker.label || 'Default Speaker'}`);
+          setTimeout(() => setDeviceNotification(null), 3000);
+        } else if (availableSpeakers.length === 0) {
+          // No speakers available, mute speaker
+          setIsSpeakerMuted(true);
+          setDeviceNotification('Speaker disconnected - audio muted');
+          setTimeout(() => setDeviceNotification(null), 3000);
+        }
+
+      } catch (error) {
+        console.error('Error handling device change:', error);
+      }
+    };
+
+    // Listen for device changes
+    navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange);
+
+    return () => {
+      navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
+    };
+  }, []); // Empty dependency array to avoid re-registering the listener
+
   useEffect(() => {
     if (!stream) return;
-    const ctx = new AudioContext();
-    const src = ctx.createMediaStreamSource(stream);
-    const analyser = ctx.createAnalyser();
-    analyser.fftSize = 512;
-    src.connect(analyser);
-    const data = new Uint8Array(analyser.frequencyBinCount);
 
-    const detect = () => {
-      analyser.getByteFrequencyData(data);
-      const avg = data.reduce((a, b) => a + b, 0) / data.length;
-      setAudioLevel(avg);
-      requestAnimationFrame(detect);
+    let animationId;
+    let audioContext;
+
+    try {
+      audioContext = new AudioContext();
+      const src = audioContext.createMediaStreamSource(stream);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 512;
+      src.connect(analyser);
+      const data = new Uint8Array(analyser.frequencyBinCount);
+
+      const detect = () => {
+        if (audioContext.state === 'closed') return;
+        analyser.getByteFrequencyData(data);
+        const avg = data.reduce((a, b) => a + b, 0) / data.length;
+        setAudioLevel(avg);
+        animationId = requestAnimationFrame(detect);
+      };
+      detect();
+    } catch (error) {
+      console.error('Error setting up audio level detection:', error);
+    }
+
+    return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+      if (audioContext && audioContext.state !== 'closed') {
+        audioContext.close();
+      }
     };
-    detect();
   }, [stream]);
 
   const toggleMic = () => {
-    if (!audioTrack) return;
-    audioTrack.enabled = !audioTrack.enabled;
-    setIsMicOn(audioTrack.enabled);
+    if (!audioTrack || mics.length === 0) return;
+    const newState = !isMicOn;
+    audioTrack.enabled = newState;
+    setIsMicOn(newState);
+    console.log(`Microphone ${newState ? 'enabled' : 'disabled'}, camera state unchanged:`, isCameraOn);
   };
 
   const toggleCamera = () => {
-    if (!videoTrack) return;
-    videoTrack.enabled = !videoTrack.enabled;
-    setIsCameraOn(videoTrack.enabled);
+    if (!videoTrack || cameras.length === 0) return;
+    const newState = !isCameraOn;
+    videoTrack.enabled = newState;
+    setIsCameraOn(newState);
+    console.log(`Camera ${newState ? 'enabled' : 'disabled'}, microphone state unchanged:`, isMicOn);
   };
 
   const switchCamera = async (deviceId) => {
@@ -321,6 +432,18 @@ const MeetingPage = () => {
           TooltipTrigger={TooltipTrigger}
           TooltipContent={TooltipContent}
         />
+
+        {/* Device Change Notification */}
+        {deviceNotification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-purple-600 text-white px-4 py-2 rounded-lg shadow-lg border border-purple-500"
+          >
+            {deviceNotification}
+          </motion.div>
+        )}
 
         <div className="relative z-10 max-w-7xl mx-auto p-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[calc(100vh-120px)]">

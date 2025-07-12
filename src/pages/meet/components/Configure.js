@@ -258,10 +258,13 @@ const Configure = ({
         {/* Loopback Test Button */}
         <div className="pt-4">
           <Button
-            onClick={testMicLoopback}
-            className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20"
+            onClick={mics.length > 0 ? testMicLoopback : undefined}
+            disabled={mics.length === 0}
+            className={`w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 ${
+              mics.length === 0 ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
-            🔊 Test Microphone Loopback
+            🔊 {mics.length === 0 ? "No Microphone Available" : "Test Microphone Loopback"}
           </Button>
         </div>
       </motion.div>
