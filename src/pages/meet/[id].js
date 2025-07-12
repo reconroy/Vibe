@@ -276,29 +276,61 @@ const MeetingPage = () => {
   }, []); // Empty dependency array to avoid re-registering the listener
 
   useEffect(() => {
-    if (!stream) return;
+    if (!audioTrack || !isMicOn) {
+      setAudioLevel(0);
+      return;
+    }
 
     let animationId;
     let audioContext;
 
     try {
       audioContext = new AudioContext();
-      const src = audioContext.createMediaStreamSource(stream);
+
+      // Create a stream with only the audio track for analysis
+      const audioStream = new MediaStream([audioTrack]);
+      const src = audioContext.createMediaStreamSource(audioStream);
       const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 512;
+
+      // Configure analyser for better sensitivity
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.3;
+      analyser.minDecibels = -90;
+      analyser.maxDecibels = -10;
+
       src.connect(analyser);
-      const data = new Uint8Array(analyser.frequencyBinCount);
+      const timeDataArray = new Uint8Array(analyser.fftSize);
 
       const detect = () => {
         if (audioContext.state === 'closed') return;
-        analyser.getByteFrequencyData(data);
-        const avg = data.reduce((a, b) => a + b, 0) / data.length;
-        setAudioLevel(avg);
+
+        // Use time domain data for more accurate real-time audio level detection
+        analyser.getByteTimeDomainData(timeDataArray);
+
+        // Calculate RMS from time domain data
+        let sum = 0;
+        for (let i = 0; i < timeDataArray.length; i++) {
+          const sample = (timeDataArray[i] - 128) / 128; // Convert to -1 to 1 range
+          sum += sample * sample;
+        }
+        const rms = Math.sqrt(sum / timeDataArray.length);
+
+        // Scale to 0-100 range with better sensitivity
+        const scaledLevel = Math.min(100, rms * 200);
+
+        // Debug logging (remove in production)
+        if (scaledLevel > 1) {
+          console.log(`Audio level: ${scaledLevel.toFixed(1)}%, RMS: ${rms.toFixed(3)}`);
+        }
+
+        setAudioLevel(scaledLevel);
         animationId = requestAnimationFrame(detect);
       };
+
       detect();
     } catch (error) {
       console.error('Error setting up audio level detection:', error);
+      setAudioLevel(0);
     }
 
     return () => {
@@ -309,7 +341,7 @@ const MeetingPage = () => {
         audioContext.close();
       }
     };
-  }, [stream]);
+  }, [audioTrack, isMicOn]); // Depend on audioTrack and isMicOn
 
   // Cleanup loopback only when component unmounts (leaving page)
   useEffect(() => {

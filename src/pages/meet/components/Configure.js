@@ -88,8 +88,12 @@ const Configure = ({
                 <Button
                   variant={isMicOn && mics.length > 0 ? "default" : "destructive"}
                   size="icon"
-                  className={`rounded-full w-9 h-9 relative ${
-                    audioLevel > 20 && isMicOn ? "ring-2 ring-green-500" : ""
+                  className={`rounded-full w-9 h-9 relative transition-all duration-200 ${
+                    audioLevel > 5 && isMicOn && mics.length > 0
+                      ? audioLevel > 25
+                        ? "ring-4 ring-green-400 shadow-lg shadow-green-400/50"
+                        : "ring-2 ring-green-500"
+                      : ""
                   } ${mics.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
                   onClick={mics.length > 0 ? toggleMic : undefined}
                   disabled={mics.length === 0}
@@ -232,6 +236,35 @@ const Configure = ({
                 No microphones available
               </div>
             )}
+
+            {/* Audio Level Indicator */}
+            {/* {mics.length > 0 && (
+              <div className="mt-2">
+                <div className="flex items-center justify-between text-xs text-white/60 mb-1">
+                  <span>Audio Level</span>
+                  <span>{Math.round(audioLevel)}%</span>
+                </div>
+                <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-100 ${
+                      audioLevel > 50
+                        ? "bg-red-500"
+                        : audioLevel > 25
+                        ? "bg-yellow-500"
+                        : audioLevel > 5
+                        ? "bg-green-500"
+                        : "bg-gray-500"
+                    }`}
+                    style={{ width: `${Math.min(100, audioLevel)}%` }}
+                  />
+                </div>
+                {audioLevel < 5 && isMicOn && (
+                  <p className="text-xs text-white/40 mt-1">
+                    Speak into your microphone to test audio levels
+                  </p>
+                )}
+              </div>
+            )} */}
           </div>
 
           {/* Speaker Dropdown */}
