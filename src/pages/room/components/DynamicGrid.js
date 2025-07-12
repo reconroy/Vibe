@@ -26,28 +26,81 @@ const DynamicGrid = ({
     return { cols: 6, rows: Math.ceil(count / 6) };
   };
 
-  const gridLayout = useMemo(() => {
-    const visibleParticipants = pinnedParticipant 
-      ? [pinnedParticipant, ...participants.filter(p => p.id !== pinnedParticipant.id)]
-      : participants;
-    
-    return calculateGridLayout(visibleParticipants.length, containerWidth, containerHeight);
-  }, [participants.length, pinnedParticipant, containerWidth, containerHeight]);
-
-  const visibleParticipants = useMemo(() => {
+  const { mainParticipant, sideParticipants, layout } = useMemo(() => {
     if (pinnedParticipant) {
-      return [pinnedParticipant, ...participants.filter(p => p.id !== pinnedParticipant.id)];
+      // Google Meet style: Large pinned user + sidebar with others
+      const others = participants.filter(p => p.id !== pinnedParticipant.id);
+      return {
+        mainParticipant: pinnedParticipant,
+        sideParticipants: others,
+        layout: 'pinned'
+      };
+    } else {
+      // Regular grid layout
+      return {
+        mainParticipant: null,
+        sideParticipants: participants,
+        layout: 'grid'
+      };
     }
-    return participants;
   }, [participants, pinnedParticipant]);
 
-  // Calculate tile dimensions
-  const tileWidth = containerWidth / gridLayout.cols;
-  const tileHeight = containerHeight / gridLayout.rows;
+  const gridLayout = useMemo(() => {
+    if (layout === 'pinned') {
+      // For pinned layout, calculate grid for sidebar participants only
+      return calculateGridLayout(sideParticipants.length, 300, containerHeight); // Fixed sidebar width
+    }
+    return calculateGridLayout(participants.length, containerWidth, containerHeight);
+  }, [participants.length, sideParticipants.length, layout, containerWidth, containerHeight]);
 
+  if (layout === 'pinned') {
+    // Google Meet style pinned layout
+    return (
+      <div className="w-full h-full flex bg-gray-900">
+        {/* Main pinned participant - takes most of the space */}
+        <div className="flex-1 p-4">
+          <ParticipantTile
+            key={mainParticipant.id}
+            participant={mainParticipant}
+            isPinned={true}
+            onPin={() => onPinParticipant(mainParticipant)}
+            onUnpin={() => onPinParticipant(null)}
+            isMainTile={true}
+            index={0}
+          />
+        </div>
+
+        {/* Sidebar with other participants */}
+        {sideParticipants.length > 0 && (
+          <div className="w-80 p-4 pl-0">
+            <div
+              className="grid gap-2 w-full h-full"
+              style={{
+                gridTemplateColumns: '1fr',
+                gridTemplateRows: `repeat(${Math.min(sideParticipants.length, 6)}, 1fr)`,
+              }}
+            >
+              {sideParticipants.slice(0, 6).map((participant, index) => (
+                <ParticipantTile
+                  key={participant.id}
+                  participant={participant}
+                  isPinned={false}
+                  onPin={() => onPinParticipant(participant)}
+                  onUnpin={() => onPinParticipant(null)}
+                  isMainTile={false}
+                  index={index + 1}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Regular grid layout
   return (
     <div className="w-full h-full relative bg-gray-900">
-      {/* Main Grid Container */}
       <div
         className="grid gap-2 w-full h-full p-4"
         style={{
@@ -55,16 +108,14 @@ const DynamicGrid = ({
           gridTemplateRows: `repeat(${gridLayout.rows}, 1fr)`,
         }}
       >
-        {visibleParticipants.map((participant, index) => (
+        {sideParticipants.map((participant, index) => (
           <ParticipantTile
             key={participant.id}
             participant={participant}
-            isPinned={pinnedParticipant?.id === participant.id}
+            isPinned={false}
             onPin={() => onPinParticipant(participant)}
             onUnpin={() => onPinParticipant(null)}
-            isMainTile={pinnedParticipant && index === 0}
-            tileWidth={tileWidth}
-            tileHeight={tileHeight}
+            isMainTile={false}
             index={index}
           />
         ))}
@@ -73,15 +124,13 @@ const DynamicGrid = ({
   );
 };
 
-const ParticipantTile = ({ 
-  participant, 
-  isPinned, 
-  onPin, 
-  onUnpin, 
+const ParticipantTile = ({
+  participant,
+  isPinned,
+  onPin,
+  onUnpin,
   isMainTile,
-  tileWidth,
-  tileHeight,
-  index 
+  index
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
@@ -121,15 +170,11 @@ const ParticipantTile = ({
       className={`
         relative bg-gray-800 rounded-xl overflow-hidden border-2 transition-all duration-200 shadow-lg
         ${isPinned ? 'border-blue-500 ring-2 ring-blue-500/30' : 'border-gray-600'}
-        ${isMainTile ? 'col-span-2 row-span-2' : ''}
         ${audioLevel > 30 && !participant.isMuted ? 'ring-2 ring-green-500/50' : ''}
+        ${isMainTile ? 'w-full h-full' : 'aspect-video'}
       `}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={{
-        aspectRatio: isMainTile ? '16/9' : '16/9', // Use 16:9 for all for better appearance
-        minHeight: '200px'
-      }}
     >
       {/* Video/Avatar Content */}
       <div className="w-full h-full relative">
