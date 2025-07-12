@@ -35,6 +35,10 @@ const MeetingPage = () => {
   const [mics, setMics] = useState([]);
   const [speakers, setSpeakers] = useState([]);
 
+  const [selectedCamera, setSelectedCamera] = useState(null);
+  const [selectedMic, setSelectedMic] = useState(null);
+  const [selectedSpeaker, setSelectedSpeaker] = useState(null);
+
   const [stream, setStream] = useState(null);
   const [videoTrack, setVideoTrack] = useState(null);
   const [audioTrack, setAudioTrack] = useState(null);
@@ -42,21 +46,124 @@ const MeetingPage = () => {
   const videoRef = useRef(null);
   const loopbackAudioRef = useRef(null);
 
+  // Local storage keys
+  const STORAGE_KEYS = {
+    camera: 'vibe_selected_camera',
+    mic: 'vibe_selected_mic',
+    speaker: 'vibe_selected_speaker'
+  };
+
+  // Load device preferences from localStorage
+  const loadDevicePreferences = () => {
+    try {
+      return {
+        camera: localStorage.getItem(STORAGE_KEYS.camera),
+        mic: localStorage.getItem(STORAGE_KEYS.mic),
+        speaker: localStorage.getItem(STORAGE_KEYS.speaker)
+      };
+    } catch (error) {
+      console.warn('Failed to load device preferences:', error);
+      return { camera: null, mic: null, speaker: null };
+    }
+  };
+
+  // Save device preference to localStorage
+  const saveDevicePreference = (type, deviceId) => {
+    try {
+      localStorage.setItem(STORAGE_KEYS[type], deviceId);
+    } catch (error) {
+      console.warn(`Failed to save ${type} preference:`, error);
+    }
+  };
+
+  // Initialize devices and media
   useEffect(() => {
     const init = async () => {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      setCameras(devices.filter(d => d.kind === "videoinput"));
-      setMics(devices.filter(d => d.kind === "audioinput"));
-      setSpeakers(devices.filter(d => d.kind === "audiooutput"));
+      try {
+        // Get available devices
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const availableCameras = devices.filter(d => d.kind === "videoinput");
+        const availableMics = devices.filter(d => d.kind === "audioinput");
+        const availableSpeakers = devices.filter(d => d.kind === "audiooutput");
 
-      const media = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      setStream(media);
-      const video = media.getVideoTracks()[0];
-      const audio = media.getAudioTracks()[0];
-      setVideoTrack(video);
-      setAudioTrack(audio);
-      if (videoRef.current) videoRef.current.srcObject = media;
+        setCameras(availableCameras);
+        setMics(availableMics);
+        setSpeakers(availableSpeakers);
+
+        // Load saved preferences
+        const preferences = loadDevicePreferences();
+
+        // Determine which devices to use
+        let cameraToUse = null;
+        let micToUse = null;
+        let speakerToUse = null;
+
+        // Camera selection
+        if (availableCameras.length > 0) {
+          const savedCamera = availableCameras.find(cam => cam.deviceId === preferences.camera);
+          cameraToUse = savedCamera || availableCameras[0];
+          setSelectedCamera(cameraToUse.deviceId);
+          if (!savedCamera) saveDevicePreference('camera', cameraToUse.deviceId);
+        } else {
+          setIsCameraOn(false);
+        }
+
+        // Microphone selection
+        if (availableMics.length > 0) {
+          const savedMic = availableMics.find(mic => mic.deviceId === preferences.mic);
+          micToUse = savedMic || availableMics[0];
+          setSelectedMic(micToUse.deviceId);
+          if (!savedMic) saveDevicePreference('mic', micToUse.deviceId);
+        } else {
+          setIsMicOn(false);
+        }
+
+        // Speaker selection
+        if (availableSpeakers.length > 0) {
+          const savedSpeaker = availableSpeakers.find(spk => spk.deviceId === preferences.speaker);
+          speakerToUse = savedSpeaker || availableSpeakers[0];
+          setSelectedSpeaker(speakerToUse.deviceId);
+          if (!savedSpeaker) saveDevicePreference('speaker', speakerToUse.deviceId);
+        } else {
+          setIsSpeakerMuted(true);
+        }
+
+        // Get media stream with selected devices
+        if (cameraToUse || micToUse) {
+          const constraints = {};
+          if (cameraToUse) {
+            constraints.video = { deviceId: { exact: cameraToUse.deviceId } };
+          }
+          if (micToUse) {
+            constraints.audio = { deviceId: { exact: micToUse.deviceId } };
+          }
+
+          const media = await navigator.mediaDevices.getUserMedia(constraints);
+          setStream(media);
+
+          const videoTracks = media.getVideoTracks();
+          const audioTracks = media.getAudioTracks();
+
+          if (videoTracks.length > 0) {
+            setVideoTrack(videoTracks[0]);
+          }
+          if (audioTracks.length > 0) {
+            setAudioTrack(audioTracks[0]);
+          }
+
+          if (videoRef.current) {
+            videoRef.current.srcObject = media;
+          }
+        }
+      } catch (error) {
+        console.error('Failed to initialize media devices:', error);
+        // If we can't get media, disable all controls
+        setIsCameraOn(false);
+        setIsMicOn(false);
+        setIsSpeakerMuted(true);
+      }
     };
+
     init();
   }, []);
 
@@ -91,26 +198,79 @@ const MeetingPage = () => {
   };
 
   const switchCamera = async (deviceId) => {
-    const newStream = await navigator.mediaDevices.getUserMedia({ video: { deviceId } });
-    const newVideo = newStream.getVideoTracks()[0];
-    stream.removeTrack(videoTrack);
-    stream.addTrack(newVideo);
-    setVideoTrack(newVideo);
-    videoRef.current.srcObject = stream;
+    try {
+      if (stream && videoTrack) {
+        // Stop current video track
+        videoTrack.stop();
+
+        // Get new video stream with selected camera
+        const newVideoStream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: { exact: deviceId } }
+        });
+
+        const newVideoTrack = newVideoStream.getVideoTracks()[0];
+
+        // Replace video track in existing stream
+        stream.removeTrack(videoTrack);
+        stream.addTrack(newVideoTrack);
+
+        // Update state
+        setVideoTrack(newVideoTrack);
+        setSelectedCamera(deviceId);
+        saveDevicePreference('camera', deviceId);
+
+        // Update video element
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+
+        // Maintain camera on/off state
+        newVideoTrack.enabled = isCameraOn;
+      }
+    } catch (error) {
+      console.error('Failed to switch camera:', error);
+    }
   };
 
   const switchMic = async (deviceId) => {
-    const newStream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId } });
-    const newAudio = newStream.getAudioTracks()[0];
-    stream.removeTrack(audioTrack);
-    stream.addTrack(newAudio);
-    setAudioTrack(newAudio);
-    videoRef.current.srcObject = stream;
+    try {
+      if (stream && audioTrack) {
+        // Stop current audio track
+        audioTrack.stop();
+
+        // Get new audio stream with selected microphone
+        const newAudioStream = await navigator.mediaDevices.getUserMedia({
+          audio: { deviceId: { exact: deviceId } }
+        });
+
+        const newAudioTrack = newAudioStream.getAudioTracks()[0];
+
+        // Replace audio track in existing stream
+        stream.removeTrack(audioTrack);
+        stream.addTrack(newAudioTrack);
+
+        // Update state
+        setAudioTrack(newAudioTrack);
+        setSelectedMic(deviceId);
+        saveDevicePreference('mic', deviceId);
+
+        // Maintain mic on/off state
+        newAudioTrack.enabled = isMicOn;
+      }
+    } catch (error) {
+      console.error('Failed to switch microphone:', error);
+    }
   };
 
   const switchSpeaker = async (deviceId) => {
-    if (videoRef.current?.setSinkId) {
-      await videoRef.current.setSinkId(deviceId);
+    try {
+      if (videoRef.current && videoRef.current.setSinkId) {
+        await videoRef.current.setSinkId(deviceId);
+        setSelectedSpeaker(deviceId);
+        saveDevicePreference('speaker', deviceId);
+      }
+    } catch (error) {
+      console.error('Failed to switch speaker:', error);
     }
   };
 
@@ -192,6 +352,9 @@ const MeetingPage = () => {
               cameras={cameras}
               mics={mics}
               speakers={speakers}
+              selectedCamera={selectedCamera}
+              selectedMic={selectedMic}
+              selectedSpeaker={selectedSpeaker}
               testMicLoopback={testMicLoopback}
             />
 

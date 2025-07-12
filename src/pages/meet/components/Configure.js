@@ -27,6 +27,9 @@ const Configure = ({
   cameras,
   mics,
   speakers,
+  selectedCamera,
+  selectedMic,
+  selectedSpeaker,
   testMicLoopback,
 }) => {
   return (
@@ -39,7 +42,7 @@ const Configure = ({
         transition={{ duration: 0.2 }}
       >
         <div className="absolute inset-0 flex items-center justify-center">
-          {isCameraOn ? (
+          {isCameraOn && cameras.length > 0 ? (
             <video
               ref={videoRef}
               autoPlay
@@ -50,7 +53,14 @@ const Configure = ({
           ) : (
             <div className="flex flex-col items-center justify-center text-white/60">
               <CameraOff className="w-16 h-16 mb-4" />
-              <p className="text-lg">Camera is off</p>
+              <p className="text-lg">
+                {cameras.length === 0 ? "No camera available" : "Camera is off"}
+              </p>
+              {cameras.length === 0 && (
+                <p className="text-sm text-white/40 mt-2">
+                  Please connect a camera to enable video
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -67,18 +77,26 @@ const Configure = ({
             <Tooltip>
               <TooltipTrigger>
                 <Button
-                  variant={isMicOn ? "default" : "destructive"}
+                  variant={isMicOn && mics.length > 0 ? "default" : "destructive"}
                   size="icon"
                   className={`rounded-full w-9 h-9 relative ${
                     audioLevel > 20 && isMicOn ? "ring-2 ring-green-500" : ""
-                  }`}
-                  onClick={toggleMic}
+                  } ${mics.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                  onClick={mics.length > 0 ? toggleMic : undefined}
+                  disabled={mics.length === 0}
                 >
-                  {isMicOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+                  {isMicOn && mics.length > 0 ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{isMicOn ? "Mute microphone" : "Unmute microphone"}</p>
+                <p>
+                  {mics.length === 0
+                    ? "No microphone available"
+                    : isMicOn
+                    ? "Mute microphone"
+                    : "Unmute microphone"
+                  }
+                </p>
               </TooltipContent>
             </Tooltip>
 
@@ -86,16 +104,24 @@ const Configure = ({
             <Tooltip>
               <TooltipTrigger>
                 <Button
-                  variant={isCameraOn ? "default" : "destructive"}
+                  variant={isCameraOn && cameras.length > 0 ? "default" : "destructive"}
                   size="icon"
-                  className="rounded-full w-9 h-9"
-                  onClick={toggleCamera}
+                  className={`rounded-full w-9 h-9 ${cameras.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                  onClick={cameras.length > 0 ? toggleCamera : undefined}
+                  disabled={cameras.length === 0}
                 >
-                  {isCameraOn ? <Camera className="w-5 h-5" /> : <CameraOff className="w-5 h-5" />}
+                  {isCameraOn && cameras.length > 0 ? <Camera className="w-5 h-5" /> : <CameraOff className="w-5 h-5" />}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{isCameraOn ? "Turn off camera" : "Turn on camera"}</p>
+                <p>
+                  {cameras.length === 0
+                    ? "No camera available"
+                    : isCameraOn
+                    ? "Turn off camera"
+                    : "Turn on camera"
+                  }
+                </p>
               </TooltipContent>
             </Tooltip>
 
@@ -103,16 +129,24 @@ const Configure = ({
             <Tooltip>
               <TooltipTrigger>
                 <Button
-                  variant={isSpeakerMuted ? "destructive" : "default"}
+                  variant={isSpeakerMuted || speakers.length === 0 ? "destructive" : "default"}
                   size="icon"
-                  className="rounded-full w-9 h-9"
-                  onClick={() => setIsSpeakerMuted((prev) => !prev)}
+                  className={`rounded-full w-9 h-9 ${speakers.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                  onClick={speakers.length > 0 ? () => setIsSpeakerMuted((prev) => !prev) : undefined}
+                  disabled={speakers.length === 0}
                 >
                   <Speaker className="w-5 h-5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{isSpeakerMuted ? "Unmute speaker" : "Mute speaker"}</p>
+                <p>
+                  {speakers.length === 0
+                    ? "No speakers available"
+                    : isSpeakerMuted
+                    ? "Unmute speaker"
+                    : "Mute speaker"
+                  }
+                </p>
               </TooltipContent>
             </Tooltip>
           </motion.div>
@@ -139,17 +173,27 @@ const Configure = ({
               <Camera className="w-4 h-4" />
               <span>Camera</span>
             </label>
-            <Select defaultValue={cameras[0]?.label || "Default Camera"}>
-              {cameras.map((cam) => (
-                <SelectItem
-                  key={cam.deviceId}
-                  value={cam.deviceId}
-                  onClick={(val) => switchCamera(val)}
-                >
-                  {cam.label || "Camera"}
-                </SelectItem>
-              ))}
-            </Select>
+            {cameras.length > 0 ? (
+              <Select defaultValue={
+                cameras.find(cam => cam.deviceId === selectedCamera)?.label ||
+                cameras[0]?.label ||
+                "Default Camera"
+              }>
+                {cameras.map((cam) => (
+                  <SelectItem
+                    key={cam.deviceId}
+                    value={cam.deviceId}
+                    onClick={(val) => switchCamera(val)}
+                  >
+                    {cam.label || `Camera ${cam.deviceId.slice(0, 8)}`}
+                  </SelectItem>
+                ))}
+              </Select>
+            ) : (
+              <div className="w-full px-3 py-2 text-left bg-white/5 border border-white/20 rounded-md text-white/60">
+                No cameras available
+              </div>
+            )}
           </div>
 
           {/* Microphone Dropdown */}
@@ -158,17 +202,27 @@ const Configure = ({
               <Mic className="w-4 h-4" />
               <span>Microphone</span>
             </label>
-            <Select defaultValue={mics[0]?.label || "Default Microphone"}>
-              {mics.map((mic) => (
-                <SelectItem
-                  key={mic.deviceId}
-                  value={mic.deviceId}
-                  onClick={(val) => switchMic(val)}
-                >
-                  {mic.label || "Microphone"}
-                </SelectItem>
-              ))}
-            </Select>
+            {mics.length > 0 ? (
+              <Select defaultValue={
+                mics.find(mic => mic.deviceId === selectedMic)?.label ||
+                mics[0]?.label ||
+                "Default Microphone"
+              }>
+                {mics.map((mic) => (
+                  <SelectItem
+                    key={mic.deviceId}
+                    value={mic.deviceId}
+                    onClick={(val) => switchMic(val)}
+                  >
+                    {mic.label || `Microphone ${mic.deviceId.slice(0, 8)}`}
+                  </SelectItem>
+                ))}
+              </Select>
+            ) : (
+              <div className="w-full px-3 py-2 text-left bg-white/5 border border-white/20 rounded-md text-white/60">
+                No microphones available
+              </div>
+            )}
           </div>
 
           {/* Speaker Dropdown */}
@@ -177,17 +231,27 @@ const Configure = ({
               <Speaker className="w-4 h-4" />
               <span>Speakers</span>
             </label>
-            <Select defaultValue={speakers[0]?.label || "Default Speakers"}>
-              {speakers.map((spk) => (
-                <SelectItem
-                  key={spk.deviceId}
-                  value={spk.deviceId}
-                  onClick={(val) => switchSpeaker(val)}
-                >
-                  {spk.label || "Speaker"}
-                </SelectItem>
-              ))}
-            </Select>
+            {speakers.length > 0 ? (
+              <Select defaultValue={
+                speakers.find(spk => spk.deviceId === selectedSpeaker)?.label ||
+                speakers[0]?.label ||
+                "Default Speakers"
+              }>
+                {speakers.map((spk) => (
+                  <SelectItem
+                    key={spk.deviceId}
+                    value={spk.deviceId}
+                    onClick={(val) => switchSpeaker(val)}
+                  >
+                    {spk.label || `Speaker ${spk.deviceId.slice(0, 8)}`}
+                  </SelectItem>
+                ))}
+              </Select>
+            ) : (
+              <div className="w-full px-3 py-2 text-left bg-white/5 border border-white/20 rounded-md text-white/60">
+                No speakers available
+              </div>
+            )}
           </div>
         </div>
 
