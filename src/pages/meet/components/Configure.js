@@ -30,7 +30,8 @@ const Configure = ({
   selectedCamera,
   selectedMic,
   selectedSpeaker,
-  testMicLoopback,
+  toggleMicLoopback,
+  isLoopbackActive,
 }) => {
   return (
     <div className="lg:col-span-2 space-y-6">
@@ -47,7 +48,7 @@ const Configure = ({
               ref={videoRef}
               autoPlay
               playsInline
-              muted={isSpeakerMuted}
+              muted={true}
               className="w-full h-full object-cover rounded-2xl"
             />
           ) : (
@@ -64,6 +65,14 @@ const Configure = ({
             </div>
           )}
         </div>
+
+        {/* Loopback Active Indicator */}
+        {isLoopbackActive && (
+          <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-2">
+            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+            <span>Mic Test Active</span>
+          </div>
+        )}
 
         {/* Control Buttons */}
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
@@ -258,13 +267,22 @@ const Configure = ({
         {/* Loopback Test Button */}
         <div className="pt-4">
           <Button
-            onClick={mics.length > 0 ? testMicLoopback : undefined}
+            onClick={mics.length > 0 ? toggleMicLoopback : undefined}
             disabled={mics.length === 0}
-            className={`w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 ${
-              mics.length === 0 ? "opacity-50 cursor-not-allowed" : ""
+            className={`w-full text-white border border-white/20 ${
+              mics.length === 0
+                ? "opacity-50 cursor-not-allowed bg-white/10"
+                : isLoopbackActive
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-white/10 hover:bg-white/20"
             }`}
           >
-            🔊 {mics.length === 0 ? "No Microphone Available" : "Test Microphone Loopback"}
+            {mics.length === 0
+              ? "🔇 No Microphone Available"
+              : isLoopbackActive
+              ? "🔇 Stop Microphone Test"
+              : "🔊 Test Microphone Loopback"
+            }
           </Button>
         </div>
       </motion.div>

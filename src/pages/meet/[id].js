@@ -292,6 +292,17 @@ const MeetingPage = () => {
     };
   }, [stream]);
 
+  // Cleanup loopback when audio track changes or component unmounts
+  useEffect(() => {
+    return () => {
+      if (isLoopbackActive && loopbackAudioRef.current) {
+        loopbackAudioRef.current.pause();
+        loopbackAudioRef.current.srcObject = null;
+        setIsLoopbackActive(false);
+      }
+    };
+  }, [audioTrack, isLoopbackActive]);
+
   const toggleMic = () => {
     if (!audioTrack || mics.length === 0) return;
     const newState = !isMicOn;
@@ -367,6 +378,13 @@ const MeetingPage = () => {
 
         // Maintain mic on/off state
         newAudioTrack.enabled = isMicOn;
+
+        // If loopback was active, restart it with new microphone
+        if (isLoopbackActive) {
+          const loopback = new MediaStream([newAudioTrack]);
+          loopbackAudioRef.current.srcObject = loopback;
+          loopbackAudioRef.current.play();
+        }
       }
     } catch (error) {
       console.error('Failed to switch microphone:', error);
@@ -385,15 +403,21 @@ const MeetingPage = () => {
     }
   };
 
-  const testMicLoopback = () => {
+  const toggleMicLoopback = () => {
     if (!audioTrack) return;
-    const loopback = new MediaStream([audioTrack]);
-    loopbackAudioRef.current.srcObject = loopback;
-    loopbackAudioRef.current.play();
-    setTimeout(() => {
+
+    if (isLoopbackActive) {
+      // Turn off loopback
       loopbackAudioRef.current.pause();
       loopbackAudioRef.current.srcObject = null;
-    }, 5000);
+      setIsLoopbackActive(false);
+    } else {
+      // Turn on loopback
+      const loopback = new MediaStream([audioTrack]);
+      loopbackAudioRef.current.srcObject = loopback;
+      loopbackAudioRef.current.play();
+      setIsLoopbackActive(true);
+    }
   };
 
   const meetingId = "abc-defg-hij";
@@ -478,7 +502,8 @@ const MeetingPage = () => {
               selectedCamera={selectedCamera}
               selectedMic={selectedMic}
               selectedSpeaker={selectedSpeaker}
-              testMicLoopback={testMicLoopback}
+              toggleMicLoopback={toggleMicLoopback}
+              isLoopbackActive={isLoopbackActive}
             />
 
             <RightPanel
