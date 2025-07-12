@@ -27,7 +27,7 @@ const router = useRouter();
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8 }}
-        className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur border-b border-gray-800"
+        className="fixed top-0 w-full z-50 bg-black/10 backdrop-blur"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">

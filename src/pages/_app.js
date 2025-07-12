@@ -6,16 +6,10 @@ export default function App({ Component, pageProps }) {
     <>
       <Head>
         {/* Load Material Symbols */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
-          rel="stylesheet"
-        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Mukta:wght@200;300;400;500;600;700;800&family=Winky+Rough:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet" />
 
-        {/* Load Inter font (recommended clean UI font) */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
-          rel="stylesheet"
-        />
       </Head>
       <Component {...pageProps} />
     </>

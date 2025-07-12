@@ -1,5 +1,6 @@
 // MeetingPage.js
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import {
   Camera,
@@ -26,6 +27,9 @@ const TooltipContent = ({ children }) => null;
 const TooltipProvider = ({ children }) => children;
 
 const MeetingPage = () => {
+  const router = useRouter();
+  const { id: meetingId } = router.query;
+
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
   const [isSpeakerMuted, setIsSpeakerMuted] = useState(false);
@@ -669,7 +673,6 @@ const MeetingPage = () => {
     }
   };
 
-  const meetingId = "abc-defg-hij";
   const hostName = "Sarah Chen";
   const participants = [
     { name: "Sarah Chen", avatar: "SC", isHost: true },
@@ -687,11 +690,15 @@ const MeetingPage = () => {
 
   const formatTime = (d) => d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
   const formatDate = (d) => d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-  const copyMeetingId = () => navigator.clipboard.writeText(meetingId);
+  const copyMeetingId = () => {
+    if (meetingId && meetingId !== "Loading...") {
+      navigator.clipboard.writeText(meetingId);
+    }
+  };
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gray-900 relative">
+      <div className="min-h-screen bg-gray-900 relative winky-rough-google">
         <Header
           motion={motion}
           currentTime={currentTime}
@@ -758,7 +765,7 @@ const MeetingPage = () => {
 
             <RightPanel
               motion={motion}
-              meetingId={meetingId}
+              meetingId={meetingId || "Loading..."}
               hostName={hostName}
               participants={participants}
               copyMeetingId={copyMeetingId}
