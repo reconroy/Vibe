@@ -46,10 +46,10 @@ const DynamicGrid = ({
   const tileHeight = containerHeight / gridLayout.rows;
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full relative bg-gray-900">
       {/* Main Grid Container */}
-      <div 
-        className="grid gap-1 w-full h-full p-2"
+      <div
+        className="grid gap-2 w-full h-full p-4"
         style={{
           gridTemplateColumns: `repeat(${gridLayout.cols}, 1fr)`,
           gridTemplateRows: `repeat(${gridLayout.rows}, 1fr)`,
@@ -119,31 +119,35 @@ const ParticipantTile = ({
       animate="visible"
       whileHover="hover"
       className={`
-        relative bg-gray-800 rounded-lg overflow-hidden border-2 transition-all duration-200
-        ${isPinned ? 'border-blue-500 ring-2 ring-blue-500/30' : 'border-gray-700'}
+        relative bg-gray-800 rounded-xl overflow-hidden border-2 transition-all duration-200 shadow-lg
+        ${isPinned ? 'border-blue-500 ring-2 ring-blue-500/30' : 'border-gray-600'}
         ${isMainTile ? 'col-span-2 row-span-2' : ''}
         ${audioLevel > 30 && !participant.isMuted ? 'ring-2 ring-green-500/50' : ''}
       `}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
-        aspectRatio: isMainTile ? '16/9' : '4/3',
-        minHeight: isMainTile ? '300px' : '150px'
+        aspectRatio: isMainTile ? '16/9' : '16/9', // Use 16:9 for all for better appearance
+        minHeight: '200px'
       }}
     >
       {/* Video/Avatar Content */}
       <div className="w-full h-full relative">
         {participant.isCameraOff ? (
           // Avatar when camera is off
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-600 to-blue-600">
-            <div className="text-white text-4xl font-bold">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
+            <div className="text-white text-6xl font-bold mb-2">
               {participant.avatar}
+            </div>
+            <div className="text-white/80 text-lg font-medium">
+              {participant.name}
             </div>
           </div>
         ) : (
           // Video placeholder (in real app, this would be the video stream)
-          <div className="w-full h-full bg-gray-700 flex items-center justify-center">
-            <Camera className="w-8 h-8 text-gray-400" />
+          <div className="w-full h-full bg-gray-700 flex flex-col items-center justify-center">
+            <Camera className="w-12 h-12 text-gray-400 mb-2" />
+            <span className="text-gray-400 text-sm">Camera On</span>
           </div>
         )}
 

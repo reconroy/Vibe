@@ -33,9 +33,10 @@ const MeetingControls = ({
   onShareScreen,
   onCopyMeetingLink,
   onToggleFullscreen,
+  onAddTestUser,
   participantCount,
   meetingId,
-  showControls
+  showControls = true // Always show controls for now
 }) => {
   const [showMoreOptions, setShowMoreOptions] = useState(false);
 
@@ -54,39 +55,25 @@ const MeetingControls = ({
   };
 
   return (
-    <AnimatePresence>
-      {showControls && (
-        <motion.div
-          variants={controlVariants}
-          initial="hidden"
-          animate="visible"
-          exit="hidden"
-          className="fixed bottom-0 left-0 right-0 z-50"
-        >
-          {/* Meeting Info Bar */}
-          <div className="bg-black/20 backdrop-blur-sm border-t border-white/10 px-6 py-2">
-            <div className="flex items-center justify-between text-white text-sm">
-              <div className="flex items-center space-x-4">
-                <span className="font-medium">Meeting ID: {meetingId}</span>
-                <button
-                  onClick={onCopyMeetingLink}
-                  className="flex items-center space-x-1 hover:text-blue-400 transition-colors"
-                >
-                  <Copy className="w-4 h-4" />
-                  <span>Copy Link</span>
-                </button>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Users className="w-4 h-4" />
-                <span>{participantCount} participants</span>
-              </div>
-            </div>
+    <div className="absolute bottom-0 left-0 right-0 z-50 h-20">
+      {/* Single Controls Bar - Google Meet Style */}
+      <div className="bg-gray-900/95 backdrop-blur-sm px-6 py-3">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          {/* Left side - Meeting info */}
+          <div className="flex items-center space-x-4 text-white">
+            <span className="text-sm font-medium">Meeting ID: {meetingId}</span>
+            <button
+              onClick={onCopyMeetingLink}
+              className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors text-sm"
+            >
+              <Copy className="w-4 h-4" />
+              <span>Copy Link</span>
+            </button>
           </div>
 
-          {/* Main Controls */}
-          <div className="bg-gray-900/95 backdrop-blur-sm px-6 py-4">
-            <div className="flex items-center justify-center space-x-4">
-              
+          {/* Center - Main Controls */}
+          <div className="flex items-center space-x-3">
+
               {/* Microphone Control */}
               <motion.button
                 variants={buttonVariants}
@@ -94,14 +81,14 @@ const MeetingControls = ({
                 whileTap="tap"
                 onClick={onToggleMic}
                 className={`
-                  p-4 rounded-full transition-all duration-200 
-                  ${isMicOn 
-                    ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                  p-3 rounded-full transition-all duration-200
+                  ${isMicOn
+                    ? 'bg-gray-700 hover:bg-gray-600 text-white'
                     : 'bg-red-600 hover:bg-red-700 text-white'
                   }
                 `}
               >
-                {isMicOn ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}
+                {isMicOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
               </motion.button>
 
               {/* Camera Control */}
@@ -111,14 +98,14 @@ const MeetingControls = ({
                 whileTap="tap"
                 onClick={onToggleCamera}
                 className={`
-                  p-4 rounded-full transition-all duration-200 
-                  ${isCameraOn 
-                    ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                  p-3 rounded-full transition-all duration-200
+                  ${isCameraOn
+                    ? 'bg-gray-700 hover:bg-gray-600 text-white'
                     : 'bg-red-600 hover:bg-red-700 text-white'
                   }
                 `}
               >
-                {isCameraOn ? <Camera className="w-6 h-6" /> : <CameraOff className="w-6 h-6" />}
+                {isCameraOn ? <Camera className="w-5 h-5" /> : <CameraOff className="w-5 h-5" />}
               </motion.button>
 
               {/* Speaker Control */}
@@ -128,14 +115,14 @@ const MeetingControls = ({
                 whileTap="tap"
                 onClick={onToggleSpeaker}
                 className={`
-                  p-4 rounded-full transition-all duration-200 
-                  ${isSpeakerOn 
-                    ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                  p-3 rounded-full transition-all duration-200
+                  ${isSpeakerOn
+                    ? 'bg-gray-700 hover:bg-gray-600 text-white'
                     : 'bg-red-600 hover:bg-red-700 text-white'
                   }
                 `}
               >
-                {isSpeakerOn ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
+                {isSpeakerOn ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
               </motion.button>
 
               {/* Share Screen */}
@@ -144,22 +131,54 @@ const MeetingControls = ({
                 whileHover="hover"
                 whileTap="tap"
                 onClick={onShareScreen}
-                className="p-4 rounded-full bg-gray-700 hover:bg-gray-600 text-white transition-all duration-200"
+                className="p-3 rounded-full bg-gray-700 hover:bg-gray-600 text-white transition-all duration-200"
               >
-                <Share className="w-6 h-6" />
+                <Share className="w-5 h-5" />
               </motion.button>
 
-              {/* More Options */}
-              <div className="relative">
-                <motion.button
-                  variants={buttonVariants}
-                  whileHover="hover"
-                  whileTap="tap"
-                  onClick={() => setShowMoreOptions(!showMoreOptions)}
-                  className="p-4 rounded-full bg-gray-700 hover:bg-gray-600 text-white transition-all duration-200"
-                >
-                  <MoreVertical className="w-6 h-6" />
-                </motion.button>
+              {/* Add Test User Button */}
+              <motion.button
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
+                onClick={onAddTestUser}
+                className="p-3 rounded-full bg-green-600 hover:bg-green-700 text-white transition-all duration-200"
+                title="Add Test User"
+              >
+                <Users className="w-5 h-5" />
+              </motion.button>
+
+              {/* End Call */}
+              <motion.button
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
+                onClick={onEndCall}
+                className="p-3 rounded-full bg-red-600 hover:bg-red-700 text-white transition-all duration-200"
+              >
+                <PhoneOff className="w-5 h-5" />
+              </motion.button>
+
+          </div>
+
+          {/* Right side - Additional controls and participant count */}
+          <div className="flex items-center space-x-4 text-white">
+            <div className="flex items-center space-x-2 text-sm">
+              <Users className="w-4 h-4" />
+              <span>{participantCount} participants</span>
+            </div>
+
+            {/* More Options */}
+            <div className="relative">
+              <motion.button
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
+                onClick={() => setShowMoreOptions(!showMoreOptions)}
+                className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 text-white transition-all duration-200"
+              >
+                <MoreVertical className="w-5 h-5" />
+              </motion.button>
 
                 {/* More Options Menu */}
                 <AnimatePresence>
@@ -218,23 +237,12 @@ const MeetingControls = ({
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
-
-              {/* End Call */}
-              <motion.button
-                variants={buttonVariants}
-                whileHover="hover"
-                whileTap="tap"
-                onClick={onEndCall}
-                className="p-4 rounded-full bg-red-600 hover:bg-red-700 text-white transition-all duration-200 ml-4"
-              >
-                <PhoneOff className="w-6 h-6" />
-              </motion.button>
+            </div>
             </div>
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        </div>
+      </div>
+    // </div>
   );
 };
 

@@ -17,13 +17,23 @@ const MeetingRoom = () => {
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isSpeakerOn, setIsSpeakerOn] = useState(true);
   const [pinnedParticipant, setPinnedParticipant] = useState(null);
-  const [showControls, setShowControls] = useState(true);
+  const showControls = true; // Always show controls for now
   const [showParticipants, setShowParticipants] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const controlsTimeoutRef = useRef(null);
+  // Load settings from localStorage
+  useEffect(() => {
+    const savedMicState = localStorage.getItem('vibe-mic-state');
+    const savedCameraState = localStorage.getItem('vibe-camera-state');
+    const savedSpeakerState = localStorage.getItem('vibe-speaker-state');
+
+    if (savedMicState !== null) setIsMicOn(JSON.parse(savedMicState));
+    if (savedCameraState !== null) setIsCameraOn(JSON.parse(savedCameraState));
+    if (savedSpeakerState !== null) setIsSpeakerOn(JSON.parse(savedSpeakerState));
+  }, []);
+
   const containerRef = useRef(null);
 
   // Mock participants data - in real app this would come from WebRTC/Socket.io
@@ -38,94 +48,47 @@ const MeetingRoom = () => {
         isHost: true,
         avatar: 'YU',
         stream: null
-      },
-      {
-        id: 'user-2',
-        name: 'Sarah Chen',
-        isLocal: false,
-        isMuted: false,
-        isCameraOff: false,
-        isHost: false,
-        avatar: 'SC',
-        stream: null
-      },
-      {
-        id: 'user-3',
-        name: 'Alex Rodriguez',
-        isLocal: false,
-        isMuted: true,
-        isCameraOff: false,
-        isHost: false,
-        avatar: 'AR',
-        stream: null
-      },
-      {
-        id: 'user-4',
-        name: 'Maria Kim',
-        isLocal: false,
-        isMuted: false,
-        isCameraOff: true,
-        isHost: false,
-        avatar: 'MK',
-        stream: null
-      },
-      {
-        id: 'user-5',
-        name: 'John Smith',
-        isLocal: false,
-        isMuted: false,
-        isCameraOff: false,
-        isHost: false,
-        avatar: 'JS',
-        stream: null
-      },
-      {
-        id: 'user-6',
-        name: 'Emma Wilson',
-        isLocal: false,
-        isMuted: true,
-        isCameraOff: false,
-        isHost: false,
-        avatar: 'EW',
-        stream: null
       }
     ];
 
     setParticipants(mockParticipants);
   }, [isMicOn, isCameraOn]);
 
-  // Auto-hide controls after inactivity
-  useEffect(() => {
-    const resetControlsTimeout = () => {
-      setShowControls(true);
-      if (controlsTimeoutRef.current) {
-        clearTimeout(controlsTimeoutRef.current);
-      }
-      controlsTimeoutRef.current = setTimeout(() => {
-        setShowControls(false);
-      }, 3000);
-    };
-
-    const handleMouseMove = () => resetControlsTimeout();
-    const handleKeyPress = () => resetControlsTimeout();
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('keydown', handleKeyPress);
-    resetControlsTimeout();
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('keydown', handleKeyPress);
-      if (controlsTimeoutRef.current) {
-        clearTimeout(controlsTimeoutRef.current);
-      }
-    };
-  }, []);
+  // Controls are always visible for now - removed auto-hide functionality
 
   // Control handlers
-  const handleToggleMic = () => setIsMicOn(!isMicOn);
-  const handleToggleCamera = () => setIsCameraOn(!isCameraOn);
-  const handleToggleSpeaker = () => setIsSpeakerOn(!isSpeakerOn);
+  const handleToggleMic = () => {
+    const newState = !isMicOn;
+    setIsMicOn(newState);
+    localStorage.setItem('vibe-mic-state', JSON.stringify(newState));
+  };
+
+  const handleToggleCamera = () => {
+    const newState = !isCameraOn;
+    setIsCameraOn(newState);
+    localStorage.setItem('vibe-camera-state', JSON.stringify(newState));
+  };
+
+  const handleToggleSpeaker = () => {
+    const newState = !isSpeakerOn;
+    setIsSpeakerOn(newState);
+    localStorage.setItem('vibe-speaker-state', JSON.stringify(newState));
+  };
+
+  const handleAddTestUser = () => {
+    const testUsers = [
+      { id: 'user-2', name: 'Sarah Chen', avatar: 'SC', isMuted: false, isCameraOff: false },
+      { id: 'user-3', name: 'Alex Rodriguez', avatar: 'AR', isMuted: true, isCameraOff: false },
+      { id: 'user-4', name: 'Maria Kim', avatar: 'MK', isMuted: false, isCameraOff: true },
+      { id: 'user-5', name: 'John Smith', avatar: 'JS', isMuted: false, isCameraOff: false },
+      { id: 'user-6', name: 'Emma Wilson', avatar: 'EW', isMuted: true, isCameraOff: false }
+    ];
+
+    const nextUser = testUsers.find(user => !participants.some(p => p.id === user.id));
+    if (nextUser) {
+      setParticipants(prev => [...prev, { ...nextUser, isLocal: false, isHost: false, stream: null }]);
+    }
+  };
   const handlePinParticipant = (participant) => {
     setPinnedParticipant(pinnedParticipant?.id === participant?.id ? null : participant);
   };
@@ -169,18 +132,26 @@ const MeetingRoom = () => {
     setShowChat(false);
   };
 
-  // Calculate container dimensions (accounting for controls and side panel)
-  const containerHeight = height - (showControls ? 120 : 0);
-  const containerWidth = width - ((showParticipants || showChat) ? 320 : 0);
+  // Calculate container dimensions with fixed areas - Google Meet style
+  const CONTROLS_HEIGHT = 80; // Reduced height for controls
+  const SIDE_PANEL_WIDTH = 320; // Fixed width for side panel
+
+  const containerHeight = height - CONTROLS_HEIGHT;
+  const containerWidth = width - ((showParticipants || showChat) ? SIDE_PANEL_WIDTH : 0);
 
   return (
     <div
       ref={containerRef}
       className="h-screen bg-gray-900 relative overflow-hidden"
-      onMouseMove={() => setShowControls(true)}
     >
-      {/* Dynamic Grid Layout */}
-      <div className="h-full transition-all duration-300" style={{ marginRight: (showParticipants || showChat) ? '320px' : '0' }}>
+      {/* Video Feed Area - Full height with bottom padding for controls */}
+      <div
+        className="absolute inset-0 transition-all duration-300"
+        style={{
+          right: (showParticipants || showChat) ? `${SIDE_PANEL_WIDTH}px` : '0',
+          bottom: `${CONTROLS_HEIGHT}px`
+        }}
+      >
         <DynamicGrid
           participants={participants}
           pinnedParticipant={pinnedParticipant}
@@ -200,7 +171,7 @@ const MeetingRoom = () => {
         onRemoveParticipant={handleRemoveParticipant}
       />
 
-      {/* Meeting Controls */}
+      {/* Meeting Controls - Fixed at bottom */}
       <MeetingControls
         isMicOn={isMicOn}
         isCameraOn={isCameraOn}
@@ -215,6 +186,7 @@ const MeetingRoom = () => {
         onShareScreen={handleShareScreen}
         onCopyMeetingLink={handleCopyMeetingLink}
         onToggleFullscreen={handleToggleFullscreen}
+        onAddTestUser={handleAddTestUser}
         participantCount={participants.length}
         meetingId={meetingId || 'Loading...'}
         showControls={showControls}

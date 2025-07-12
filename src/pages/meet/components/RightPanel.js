@@ -1,7 +1,8 @@
 import React from 'react'
-
+import { useRouter } from 'next/router'
 
 const RightPanel = ({ motion, meetingId, hostName, participants, copyMeetingId, Button, Copy, Users }) => {
+    const router = useRouter();
     return (
         <div className="space-y-6">
             {/* Meeting Details */}
@@ -61,7 +62,10 @@ const RightPanel = ({ motion, meetingId, hostName, participants, copyMeetingId, 
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4 }}
             >
-                <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white text-lg py-6 rounded-xl shadow-xl">
+                <Button
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white text-lg py-6 rounded-xl shadow-xl"
+                    onClick={() => router.push(`/room/${meetingId}`)}
+                >
                     Join Now
                 </Button>
             </motion.div>
