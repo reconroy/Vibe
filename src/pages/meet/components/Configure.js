@@ -71,7 +71,7 @@ const Configure = ({
         {isLoopbackActive && (
           <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-2">
             <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-            <span>Mic Test Active</span>
+            <span>Loop Back Is ON</span>
           </div>
         )}
 
@@ -185,11 +185,6 @@ const Configure = ({
         transition={{ duration: 0.2 }}
         whileHover={{ y: -2 }}
       >
-        <h3 className="text-lg font-semibold text-white flex items-center space-x-2">
-          <Settings className="w-5 h-5" />
-          <span>Device Settings</span>
-        </h3>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Camera Dropdown */}
           <div className="space-y-2">
