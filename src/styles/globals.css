@@ -1,16 +1,9 @@
 /* 🧩 Always put @import at the very top */
-/* @import url('https://fonts.googleapis.com/css2?family=Winky+Rough:ital,wght@0,300..900;1,300..900&display=swap'); */
+
 @import url('https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Mukta:wght@200;300;400;500;600;700;800&family=Winky+Rough:ital,wght@0,300..900;1,300..900&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* ✅ Font utility class */
-/* .winky-rough-google {
-  font-family: "Winky Rough", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 100;
-  font-style: normal;
-} */
 .bubblegum-sans-regular {
   font-family: "Bubblegum Sans", sans-serif;
   font-weight: 400;
