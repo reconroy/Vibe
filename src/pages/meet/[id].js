@@ -45,6 +45,7 @@ const MeetingPage = () => {
 
   const [deviceNotification, setDeviceNotification] = useState(null);
   const [isLoopbackActive, setIsLoopbackActive] = useState(false);
+  const [wasLoopbackActiveBeforeDisconnect, setWasLoopbackActiveBeforeDisconnect] = useState(false);
 
   const videoRef = useRef(null);
   const loopbackAudioRef = useRef(null);
@@ -217,14 +218,32 @@ const MeetingPage = () => {
           await switchMic(newMic.deviceId);
           setDeviceNotification(`Microphone switched to: ${newMic.label || 'Default Microphone'}`);
           setTimeout(() => setDeviceNotification(null), 3000);
-        } else if (availableMics.length === 0 && isMicOn) {
-          // No mics available, mute microphone
+        } else if (availableMics.length === 0 && (isMicOn || isLoopbackActive)) {
+          // No mics available, mute microphone and stop loopback
           setIsMicOn(false);
           if (audioTrack) {
             audioTrack.enabled = false;
           }
+          // Remember loopback state before stopping it
+          if (isLoopbackActive) {
+            setWasLoopbackActiveBeforeDisconnect(true);
+            loopbackAudioRef.current.pause();
+            loopbackAudioRef.current.srcObject = null;
+            setIsLoopbackActive(false);
+          }
           setDeviceNotification('Microphone disconnected - audio muted');
           setTimeout(() => setDeviceNotification(null), 3000);
+        } else if (availableMics.length > 0 && wasLoopbackActiveBeforeDisconnect && !isLoopbackActive) {
+          // Microphones became available again and loopback was previously active
+          if (audioTrack) {
+            const loopback = new MediaStream([audioTrack]);
+            loopbackAudioRef.current.srcObject = loopback;
+            loopbackAudioRef.current.play();
+            setIsLoopbackActive(true);
+            setWasLoopbackActiveBeforeDisconnect(false);
+            setDeviceNotification('Microphone reconnected - loopback resumed');
+            setTimeout(() => setDeviceNotification(null), 3000);
+          }
         }
 
         // Handle speaker device changes
@@ -292,16 +311,15 @@ const MeetingPage = () => {
     };
   }, [stream]);
 
-  // Cleanup loopback when audio track changes or component unmounts
+  // Cleanup loopback only when component unmounts (leaving page)
   useEffect(() => {
     return () => {
       if (isLoopbackActive && loopbackAudioRef.current) {
         loopbackAudioRef.current.pause();
         loopbackAudioRef.current.srcObject = null;
-        setIsLoopbackActive(false);
       }
     };
-  }, [audioTrack, isLoopbackActive]);
+  }, []); // Empty dependency array - only runs on unmount
 
   const toggleMic = () => {
     if (!audioTrack || mics.length === 0) return;
