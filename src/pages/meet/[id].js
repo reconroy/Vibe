@@ -139,7 +139,20 @@ const MeetingPage = () => {
             constraints.video = { deviceId: { exact: cameraToUse.deviceId } };
           }
           if (micToUse) {
-            constraints.audio = { deviceId: { exact: micToUse.deviceId } };
+            constraints.audio = {
+              deviceId: { exact: micToUse.deviceId },
+              // Disable all audio processing to get raw microphone input
+              echoCancellation: false,
+              noiseSuppression: false,
+              autoGainControl: false,
+              googEchoCancellation: false,
+              googAutoGainControl: false,
+              googNoiseSuppression: false,
+              googHighpassFilter: false,
+              googTypingNoiseDetection: false,
+              googAudioMirroring: false
+            };
+            console.log('Audio constraints (no processing):', constraints.audio);
           }
 
           const media = await navigator.mediaDevices.getUserMedia(constraints);
@@ -410,9 +423,23 @@ const MeetingPage = () => {
         // Stop current audio track
         audioTrack.stop();
 
-        // Get new audio stream with selected microphone
+        // Get new audio stream with selected microphone (no processing)
+        const audioConstraints = {
+          deviceId: { exact: deviceId },
+          // Disable all audio processing to get raw microphone input
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+          googEchoCancellation: false,
+          googAutoGainControl: false,
+          googNoiseSuppression: false,
+          googHighpassFilter: false,
+          googTypingNoiseDetection: false,
+          googAudioMirroring: false
+        };
+        console.log('Switching mic with constraints (no processing):', audioConstraints);
         const newAudioStream = await navigator.mediaDevices.getUserMedia({
-          audio: { deviceId: { exact: deviceId } }
+          audio: audioConstraints
         });
 
         const newAudioTrack = newAudioStream.getAudioTracks()[0];
@@ -458,15 +485,18 @@ const MeetingPage = () => {
 
     if (isLoopbackActive) {
       // Turn off loopback
+      console.log('Stopping microphone loopback');
       loopbackAudioRef.current.pause();
       loopbackAudioRef.current.srcObject = null;
       setIsLoopbackActive(false);
     } else {
       // Turn on loopback
+      console.log('Starting microphone loopback with raw audio track');
       const loopback = new MediaStream([audioTrack]);
       loopbackAudioRef.current.srcObject = loopback;
       loopbackAudioRef.current.play();
       setIsLoopbackActive(true);
+      console.log('Loopback audio element playing:', !loopbackAudioRef.current.paused);
     }
   };
 
@@ -569,7 +599,13 @@ const MeetingPage = () => {
           </div>
         </div>
 
-        <audio ref={loopbackAudioRef} className="hidden" />
+        <audio
+          ref={loopbackAudioRef}
+          className="hidden"
+          autoPlay
+          playsInline
+          controls={false}
+        />
       </div>
     </TooltipProvider>
   );
