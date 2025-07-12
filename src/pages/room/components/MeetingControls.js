@@ -55,10 +55,10 @@ const MeetingControls = ({
   };
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-50 h-20">
+    <div className="w-full h-full bg-gray-900/95 backdrop-blur-sm">
       {/* Single Controls Bar - Google Meet Style */}
-      <div className="bg-gray-900/95 backdrop-blur-sm px-6 py-3">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
+      <div className="px-6 py-3 h-full flex items-center">
+        <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
           {/* Left side - Meeting info */}
           <div className="flex items-center space-x-4 text-white">
             <span className="text-sm font-medium">Meeting ID: {meetingId}</span>

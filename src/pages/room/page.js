@@ -142,55 +142,59 @@ const MeetingRoom = () => {
   return (
     <div
       ref={containerRef}
-      className="h-screen bg-gray-900 relative overflow-hidden"
+      className="h-screen bg-gray-900 flex flex-col overflow-hidden"
     >
-      {/* Video Feed Area - Full height with bottom padding for controls */}
-      <div
-        className="absolute inset-0 transition-all duration-300"
-        style={{
-          right: (showParticipants || showChat) ? `${SIDE_PANEL_WIDTH}px` : '0',
-          bottom: `${CONTROLS_HEIGHT}px`
-        }}
-      >
-        <DynamicGrid
+      {/* Main content area - takes remaining space above controls */}
+      <div className="flex-1 flex relative overflow-hidden">
+        {/* Video Feed Area */}
+        <div
+          className="flex-1 transition-all duration-300"
+          style={{
+            marginRight: (showParticipants || showChat) ? `${SIDE_PANEL_WIDTH}px` : '0'
+          }}
+        >
+          <DynamicGrid
+            participants={participants}
+            pinnedParticipant={pinnedParticipant}
+            onPinParticipant={handlePinParticipant}
+            containerWidth={containerWidth}
+            containerHeight={containerHeight}
+          />
+        </div>
+
+        {/* Side Panel - positioned absolutely within the main content area */}
+        <SidePanel
+          isOpen={showParticipants || showChat}
+          onClose={handleCloseSidePanel}
+          activeTab={showParticipants ? 'participants' : 'chat'}
           participants={participants}
-          pinnedParticipant={pinnedParticipant}
-          onPinParticipant={handlePinParticipant}
-          containerWidth={containerWidth}
-          containerHeight={containerHeight}
+          onMuteParticipant={handleMuteParticipant}
+          onRemoveParticipant={handleRemoveParticipant}
         />
       </div>
 
-      {/* Side Panel */}
-      <SidePanel
-        isOpen={showParticipants || showChat}
-        onClose={handleCloseSidePanel}
-        activeTab={showParticipants ? 'participants' : 'chat'}
-        participants={participants}
-        onMuteParticipant={handleMuteParticipant}
-        onRemoveParticipant={handleRemoveParticipant}
-      />
-
-      {/* Meeting Controls - Fixed at bottom */}
-      <MeetingControls
-        isMicOn={isMicOn}
-        isCameraOn={isCameraOn}
-        isSpeakerOn={isSpeakerOn}
-        onToggleMic={handleToggleMic}
-        onToggleCamera={handleToggleCamera}
-        onToggleSpeaker={handleToggleSpeaker}
-        onEndCall={handleEndCall}
-        onToggleParticipants={handleToggleParticipants}
-        onToggleChat={handleToggleChat}
-        onToggleSettings={handleToggleSettings}
-        onShareScreen={handleShareScreen}
-        onCopyMeetingLink={handleCopyMeetingLink}
-        onToggleFullscreen={handleToggleFullscreen}
-        onAddTestUser={handleAddTestUser}
-        participantCount={participants.length}
-        meetingId={meetingId || 'Loading...'}
-        showControls={showControls}
-      />
+      {/* Meeting Controls - Fixed height at bottom */}
+      <div className="flex-shrink-0" style={{ height: `${CONTROLS_HEIGHT}px` }}>
+        <MeetingControls
+          isMicOn={isMicOn}
+          isCameraOn={isCameraOn}
+          isSpeakerOn={isSpeakerOn}
+          onToggleMic={handleToggleMic}
+          onToggleCamera={handleToggleCamera}
+          onToggleSpeaker={handleToggleSpeaker}
+          onEndCall={handleEndCall}
+          onToggleParticipants={handleToggleParticipants}
+          onToggleChat={handleToggleChat}
+          onToggleSettings={handleToggleSettings}
+          onShareScreen={handleShareScreen}
+          onCopyMeetingLink={handleCopyMeetingLink}
+          onToggleFullscreen={handleToggleFullscreen}
+          onAddTestUser={handleAddTestUser}
+          participantCount={participants.length}
+          meetingId={meetingId || 'Loading...'}
+          showControls={showControls}
+        />
+      </div>
     </div>
   );
 };
